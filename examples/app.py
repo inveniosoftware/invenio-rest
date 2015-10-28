@@ -30,20 +30,15 @@ Run example development server:
 .. code-block:: console
 
    $ cd examples
-   $ python app.py
+   $ flask -a app.py --debug run
 """
 
 from __future__ import absolute_import, print_function
 
 from flask import Flask
-from flask_babelex import Babel
 
 from invenio_rest import InvenioREST
 
 # Create Flask application
 app = Flask(__name__)
-Babel(app)
 InvenioREST(app)
-
-if __name__ == "__main__":
-    app.run()

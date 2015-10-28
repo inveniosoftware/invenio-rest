@@ -22,7 +22,12 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""REST API module for Invenio."""
+"""REST API module for Invenio.
+
+Invenio-REST takes care of installing basic error handling on a Flask API
+application, as well as initializing Flask-Limiter for rate limiting and
+Flask-CORS for Cross-Origin Resources Sharing (not enabled by default).
+"""
 
 from __future__ import absolute_import, print_function
 

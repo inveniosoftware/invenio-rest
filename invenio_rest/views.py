@@ -26,20 +26,11 @@
 
 from __future__ import absolute_import, print_function
 
-from flask import Blueprint, render_template
-from flask_babelex import gettext as _
-
-blueprint = Blueprint(
-    'invenio_rest',
-    __name__,
-    template_folder='templates',
-    static_folder='static',
-)
+from flask import jsonify, make_response
 
 
-@blueprint.route("/")
-def index():
-    """Basic view."""
-    return render_template(
-        "invenio_rest/index.html",
-        module_name=_('Invenio-REST'))
+def create_api_errorhandler(**kwargs):
+    """Create an API error handler."""
+    def api_errorhandler(e):
+        return make_response(jsonify(kwargs), kwargs['status'])
+    return api_errorhandler

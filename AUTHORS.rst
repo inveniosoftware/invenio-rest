@@ -27,4 +27,4 @@ Authors
 
 REST API module for Invenio.
 
-- CERN <info@invenio-software.org>
+- Lars Holm Nielsen <lars.holm.nielsen@cern.ch>
