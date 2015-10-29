@@ -31,10 +31,12 @@ import json
 
 import pkg_resources
 import pytest
-from flask import Flask, abort
+from flask import Flask, abort, make_response
+from flask.json import jsonify
 from mock import patch
+from werkzeug.http import quote_etag, unquote_etag
 
-from invenio_rest import InvenioREST
+from invenio_rest import ContentNegotiatedMethodView, InvenioREST
 
 
 def test_version():
@@ -144,3 +146,137 @@ def test_ratelimt(app):
         assert res.headers['X-RateLimit-Limit']
         assert res.headers['X-RateLimit-Remaining']
         assert res.headers['X-RateLimit-Reset']
+
+
+def test_content_negotiation_method_view(app):
+    """Test ContentNegotiationMethodView"""
+    def obj_to_json_serializer(data, code=200, headers=None):
+        if data:
+            res = jsonify(data)
+            res.set_etag('abc')
+        else:
+            res = make_response()
+        res.status_code = code
+        return res
+
+    class ObjectItem(ContentNegotiatedMethodView):
+        view_name = 'object_item'
+
+        def __init__(self, *args, **kwargs):
+            super(ObjectItem, self).__init__(serializers={
+                'application/json': obj_to_json_serializer,
+            }, *args, **kwargs)
+
+        def get(self, id, **kwargs):
+            self.check_etag('abc')
+            if id == 42:
+                abort(404)
+            return {'id': id, 'method': 'GET'}, 200
+
+        def put(self, id, **kwargs):
+            self.check_etag('abc')
+            if id == 42:
+                return self.make_response(None, code=404)
+            return self.make_response({'id': id, 'method': 'PUT'}, 200)
+
+        def patch(self, id, **kwargs):
+            self.check_etag('abc')
+            if id == 42:
+                return None, 404
+            return self.make_response({'id': id, 'method': 'PATCH'})
+
+        def post(self, id, **kwargs):
+            self.check_etag('abc')
+            if id == 42:
+                abort(404)
+            return {'id': id, 'method': 'POST'}
+
+    app.add_url_rule('/objects/<int:id>',
+                     view_func=ObjectItem
+                     .as_view(ObjectItem.view_name))
+
+    with app.test_client() as client:
+        read_methods = [client.get, client.head]
+        write_methods = [client.patch, client.put, client.post]
+        all_methods = read_methods + write_methods
+        method_names = {
+            'GET': client.get,
+            'POST': client.post,
+            'PUT': client.put,
+            'PATCH': client.patch,
+        }
+
+        def check_normal_response(res, method):
+            if method != client.head:
+                parsed = json.loads(res.get_data(as_text=True))
+                expected = {'id': 1, 'method': parsed['method']}
+                assert parsed == expected
+                # check that the right method was called
+                assert method_names[parsed['method']] == method
+                assert res.content_type == 'application/json'
+            assert res.status_code == 200
+            # check that the ETag is correct
+            assert unquote_etag(res.headers['ETag']) == \
+                unquote_etag(quote_etag('abc'))
+
+        def check_304_response(res):
+            assert res.status_code == 304
+            # check that the ETag is correct
+            assert unquote_etag(res.headers['ETag']) == \
+                unquote_etag(quote_etag('abc'))
+
+        # check valid call without condition
+        headers = [('Accept', 'application/json')]
+        for method in all_methods:
+            res = method('/objects/1', headers=headers)
+            check_normal_response(res, method)
+
+        # check that non accepted mime types are not accepted
+        headers = [('Accept', 'application/xml')]
+        for method in all_methods:
+            res = method('/objects/1', headers=headers)
+            assert res.status_code == 406
+
+        # check that errors are forwarded properly
+        headers = [('Accept', 'application/json')]
+        for method in all_methods:
+            res = method('/objects/42', headers=headers)
+            assert res.status_code == 404
+
+        # check Matching If-None-Match
+        headers_nonmatch_match = [('Accept', 'application/json'),
+                                  ('If-None-Match', '"xyz", "abc"')]
+        headers_nonmatch_star = [('Accept', 'application/json'),
+                                 ('If-None-Match', '"xyz", "*"')]
+        for method in read_methods:
+            res = method('/objects/1', headers=headers_nonmatch_match)
+            check_304_response(res)
+            res = method('/objects/1', headers=headers_nonmatch_star)
+            check_304_response(res)
+
+        for method in write_methods:
+            res = method('/objects/1', headers=headers_nonmatch_match)
+            assert res.status_code == 412
+            res = method('/objects/1', headers=headers_nonmatch_star)
+            assert res.status_code == 412
+
+        # check non matching If-None-Match
+        headers = [('Accept', 'application/json'),
+                   ('If-None-Match', '"xyz", "def"')]
+        for method in all_methods:
+            res = method('/objects/1', headers=headers)
+            check_normal_response(res, method)
+
+        # check matching If-Match
+        headers = [('Accept', 'application/json'),
+                   ('If-Match', '"abc", "def"')]
+        for method in all_methods:
+            res = method('/objects/1', headers=headers)
+            check_normal_response(res, method)
+
+        # check non matching If-Match
+        headers = [('Accept', 'application/json'),
+                   ('If-Match', '"xyz", "def"')]
+        for method in all_methods:
+            res = method('/objects/1', headers=headers)
+            assert res.status_code == 412

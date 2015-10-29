@@ -22,17 +22,19 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""REST API module for Invenio.
+"""Exceptions used in Invenio REST module."""
 
-Invenio-REST takes care of installing basic error handling on a Flask API
-application, as well as initializing Flask-Limiter for rate limiting and
-Flask-CORS for Cross-Origin Resources Sharing (not enabled by default).
-"""
 
-from __future__ import absolute_import, print_function
+class SameContentException(Exception):
+    """304 Same Content exception.
 
-from .ext import InvenioREST
-from .version import __version__
-from .views import ContentNegotiatedMethodView
+    Exception thrown when request is GET or HEAD, ETag is If-None-Match and
+    one or more of the ETag values match.
+    """
 
-__all__ = ('__version__', 'InvenioREST', 'ContentNegotiatedMethodView')
+    def __init__(self, etag):
+        """Constructor.
+
+        :param etag: matching etag
+        """
+        self.etag = etag
