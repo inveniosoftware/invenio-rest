@@ -34,6 +34,7 @@ import pytest
 from flask import Flask, abort, make_response
 from flask.json import jsonify
 from mock import patch
+from werkzeug.exceptions import HTTPException
 from werkzeug.http import quote_etag, unquote_etag
 
 from invenio_rest import ContentNegotiatedMethodView, InvenioREST
@@ -83,6 +84,26 @@ def test_error_handlers(app):
                     data = json.loads(res.get_data(as_text=True))
                     assert data['status'] == s
                     assert data['message']
+
+
+def test_custom_httpexception(app):
+    """Test custom HTTPException."""
+    InvenioREST(app)
+
+    class CustomBadRequest(HTTPException):
+        code = 400
+        description = 'test'
+
+    @app.route('/')
+    def test_view():
+        raise CustomBadRequest()
+
+    with app.test_client() as client:
+        res = client.get('/')
+        assert res.status_code == 400
+        data = json.loads(res.get_data(as_text=True))
+        assert data['message'] == 'test'
+        assert data['status'] == 400
 
 
 def test_cors_loading(app):

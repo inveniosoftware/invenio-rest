@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 
 from flask import Response, abort, jsonify, make_response, request
 from flask.views import MethodView
+from werkzeug.exceptions import HTTPException
 
 from .errors import SameContentException
 
@@ -35,6 +36,8 @@ from .errors import SameContentException
 def create_api_errorhandler(**kwargs):
     """Create an API error handler."""
     def api_errorhandler(e):
+        if isinstance(e, HTTPException) and e.description:
+            kwargs['message'] = e.description
         return make_response(jsonify(kwargs), kwargs['status'])
     return api_errorhandler
 
