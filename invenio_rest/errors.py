@@ -24,6 +24,31 @@
 
 """Exceptions used in Invenio REST module."""
 
+from __future__ import absolute_import, print_function
+
+import json
+
+from werkzeug.exceptions import HTTPException
+
+
+class RESTException(HTTPException):
+    """HTTP Exception delivering JSON error responses."""
+
+    def get_description(self, environ=None):
+        """Get the description."""
+        return self.description
+
+    def get_body(self, environ=None):
+        """Get the request body."""
+        return json.dumps(dict(
+            status=self.code,
+            message=self.get_description(environ)
+        ))
+
+    def get_headers(self, environ=None):
+        """Get a list of headers."""
+        return [('Content-Type', 'application/json')]
+
 
 class SameContentException(Exception):
     """304 Same Content exception.
@@ -38,3 +63,16 @@ class SameContentException(Exception):
         :param etag: matching etag
         """
         self.etag = etag
+
+
+class InvalidContentType(RESTException):
+    """Error for when an invalid content-type is provided."""
+
+    code = 415
+
+    def __init__(self, allowed_contet_types=None):
+        """Initialize exception."""
+        self.allowed_contet_types = allowed_contet_types
+        self.description = \
+            "Invalid 'Content-Type' header. Expected one of: {0}".format(
+                ", ".join(allowed_contet_types))

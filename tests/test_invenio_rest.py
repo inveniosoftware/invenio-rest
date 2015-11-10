@@ -170,7 +170,7 @@ def test_ratelimt(app):
 
 
 def test_content_negotiation_method_view(app):
-    """Test ContentNegotiationMethodView"""
+    """Test ContentNegotiationMethodView."""
     def obj_to_json_serializer(data, code=200, headers=None):
         if data:
             res = jsonify(data)
