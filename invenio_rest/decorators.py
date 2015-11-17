@@ -28,9 +28,10 @@ from __future__ import absolute_import, print_function
 
 from functools import wraps
 
-from flask import request
+from flask import Blueprint, current_app, request
 
 from .errors import InvalidContentType
+from .key_functions import key_per_user
 
 
 def require_content_types(*allowed_content_types):
@@ -42,4 +43,35 @@ def require_content_types(*allowed_content_types):
                 raise InvalidContentType(allowed_content_types)
             return f(*args, **kwargs)
         return inner
+    return decorator
+
+
+def limit_per_user(app, limit_value, per_method=False, methods=None,
+                   error_message=None, exempt_when=None, **kwargs):
+    """Limit a route per user.
+
+    Anonymous users get limited per IP address.
+    """
+    def decorator(f):
+        """Decorate function with lazy limit registering."""
+        if isinstance(app, Blueprint):
+            before_first_request = app.before_app_first_request
+        else:
+            before_first_request = app.before_first_request
+
+        @before_first_request
+        def lazy_register():
+            """Register a limit lazily to ensure Limiter has loaded."""
+            return current_app.extensions['limiter'].limit(
+                limit_value,
+                key_per_user,
+                per_method,
+                methods,
+                error_message,
+                exempt_when,
+                **kwargs
+            )(f)
+
+        return f
+
     return decorator

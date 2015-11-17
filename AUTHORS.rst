@@ -28,3 +28,4 @@ Authors
 REST API module for Invenio.
 
 - Lars Holm Nielsen <lars.holm.nielsen@cern.ch>
+- Sami Hiltunen <sami.mikael.hiltunen@cern.ch>

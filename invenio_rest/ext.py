@@ -37,7 +37,6 @@ class InvenioREST(object):
 
     def __init__(self, app=None):
         """Extension initialization."""
-        self.limiter = None
         if app:
             self.init_app(app)
 

@@ -27,8 +27,17 @@
 
 from __future__ import absolute_import, print_function
 
+import os
+
 import pytest
 from flask import Flask
+from flask_babelex import Babel
+from flask_cli import FlaskCLI
+from flask_mail import Mail
+from flask_menu import Menu
+from invenio_accounts import InvenioAccounts
+from invenio_accounts.views import blueprint
+from invenio_db import InvenioDB, db
 
 
 @pytest.fixture()
@@ -38,4 +47,38 @@ def app():
     app.config.update(
         TESTING=True
     )
+    return app
+
+
+@pytest.fixture()
+def accounts():
+    """Fixture for tests requiring Invenio-Accounts."""
+    app = Flask('testapp')
+    app.config.update(
+        MAIL_SUPPRESS_SEND=True,
+        SQLALCHEMY_TRACK_MODIFICATIONS=True,
+        TESTING=True,
+        LOGIN_DISABLED=False,
+        SECRET_KEY='testing_key',
+        TEST_USER_EMAIL='test_user@example.com',
+        TEST_USER_PASSWORD='test_password',
+        WTF_CSRF_ENABLED=False,
+        ACCOUNTS_USE_CELERY=False,
+        SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
+                                          'sqlite://'),
+        SERVER_NAME='example.com',
+    )
+    FlaskCLI(app)
+    Babel(app)
+    Mail(app)
+    Menu(app)
+    InvenioDB(app)
+    with app.app_context():
+        db.create_all()
+
+    def teardown():
+        with app.app_context():
+            db.drop_all()
+    InvenioAccounts(app)
+    app.register_blueprint(blueprint)
     return app

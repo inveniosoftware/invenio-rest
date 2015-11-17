@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,5 +22,24 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
--e git+https://github.com/alisaifee/flask-limiter.git#egg=Flask-Limiter
--e git+https://github.com/corydolphin/flask-cors.git#egg=Flask-CORS
+"""Key functions for rate limiters."""
+
+from flask import request
+from flask_security import current_user
+
+
+def key(name, value):
+    """Return a key namespaced by the module."""
+    return 'invenio-rest:{0}:{1}'.format(name, value)
+
+
+def key_per_user():
+    """Return a key for the user.
+
+    Authenticated user get per user key. Anonymous users get a per
+    IP key.
+    """
+    if current_user.is_authenticated:
+        return key('user_id', current_user.get_id())
+    else:
+        return key('user_id', request.remote_addr)

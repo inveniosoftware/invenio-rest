@@ -32,7 +32,9 @@ Flask-CORS for Cross-Origin Resources Sharing (not enabled by default).
 from __future__ import absolute_import, print_function
 
 from .ext import InvenioREST
+from .decorators import limit_per_user
 from .version import __version__
 from .views import ContentNegotiatedMethodView
 
-__all__ = ('__version__', 'InvenioREST', 'ContentNegotiatedMethodView')
+__all__ = ('__version__', 'InvenioREST', 'ContentNegotiatedMethodView',
+           'limit_per_user')

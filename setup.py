@@ -36,6 +36,7 @@ history = open('CHANGES.rst').read()
 tests_require = [
     'check-manifest>=0.25',
     'coverage>=4.0',
+    'invenio_accounts>=1.0.0a8',
     'isort>=4.2.2',
     'mock>=1.3.0',
     'pydocstyle>=1.0.0',
@@ -64,7 +65,8 @@ setup_requires = [
 ]
 
 install_requires = [
-    'Flask-Limiter>=0.8.5',
+    'Flask-Limiter>=0.9.0',
+    'Flask-Login>=0.3.0',
 ]
 
 packages = find_packages()
