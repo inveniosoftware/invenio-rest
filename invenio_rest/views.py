@@ -50,7 +50,8 @@ class ContentNegotiatedMethodView(MethodView):
     accept type. It also provides a helper method for handling ETags.
     """
 
-    def __init__(self, serializers=None, *args, **kwargs):
+    def __init__(self, serializers=None, method_serializers=None,
+                 *args, **kwargs):
         """Constructor.
 
         Register the serializing functions used to transform request
@@ -65,9 +66,15 @@ class ContentNegotiatedMethodView(MethodView):
         self.serializers.
 
         :param serializers: a dict of mediatype -> serializer function
+        :param method_serializers: a dict of HTTP method name (GET, PUT,
+        PATCH, POST, DELETE) -> dict(mediatype -> serializer function). If
+        set, it overrides the serializers dict.
         """
         super(ContentNegotiatedMethodView, self).__init__(*args, **kwargs)
-        self.serializers = serializers or {}
+        self.serializers = serializers or None
+        self.method_serializers = ({key.upper(): func for key, func in
+                                    method_serializers.items()} if
+                                   method_serializers else None)
 
     def make_response(self, *args, **kwargs):
         """Create a Flask Response.
@@ -80,10 +87,19 @@ class ContentNegotiatedMethodView(MethodView):
         :raises :py:class:`werkzeug.exceptions.NotAcceptable`: if no media type
         matches current Accept header.
         """
-        best = request.accept_mimetypes.best_match(self.serializers.keys())
-        if best is None:
-            abort(406)
-        return self.serializers[best](*args, **kwargs)
+        serializers = self.serializers
+        if self.method_serializers:
+            http_method = request.method.upper()
+            # retrieve the serializer matching the current request method
+            if http_method in self.method_serializers:
+                serializers = self.method_serializers[http_method]
+            elif http_method == 'HEAD' and 'GET' in self.method_serializers:
+                serializers = self.method_serializers['GET']
+        if serializers:
+            best = request.accept_mimetypes.best_match(serializers.keys())
+            if best is not None:
+                return serializers[best](*args, **kwargs)
+        abort(406)
 
     def dispatch_request(self, *args, **kwargs):
         """Dispatch current request.

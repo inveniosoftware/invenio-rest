@@ -169,62 +169,132 @@ def test_ratelimt(app):
         assert res.headers['X-RateLimit-Reset']
 
 
-def test_content_negotiation_method_view(app):
-    """Test ContentNegotiationMethodView."""
-    def obj_to_json_serializer(data, code=200, headers=None):
-        if data:
-            res = jsonify(data)
-            res.set_etag('abc')
-        else:
-            res = make_response()
-        res.status_code = code
-        return res
+def _obj_to_json_serializer(data, code=200, headers=None):
+    if data:
+        res = jsonify(data)
+        res.set_etag('abc')
+    else:
+        res = make_response()
+    res.status_code = code
+    return res
 
-    class ObjectItem(ContentNegotiatedMethodView):
-        view_name = 'object_item'
 
-        def __init__(self, *args, **kwargs):
-            super(ObjectItem, self).__init__(serializers={
-                'application/json': obj_to_json_serializer,
-            }, *args, **kwargs)
+class _ObjectItem(ContentNegotiatedMethodView):
+    view_name = 'object_item'
 
-        def get(self, id, **kwargs):
-            self.check_etag('abc')
-            if id == 42:
-                abort(404)
-            return {'id': id, 'method': 'GET'}, 200
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super(_ObjectItem, self).__init__(*args, **kwargs)
 
-        def put(self, id, **kwargs):
-            self.check_etag('abc')
-            if id == 42:
-                return self.make_response(None, code=404)
-            return self.make_response({'id': id, 'method': 'PUT'}, 200)
+    def get(self, id, **kwargs):
+        """GET a resource."""
+        self.check_etag('abc')
+        if id == 42:
+            abort(404)
+        return {'id': id, 'method': 'GET'}, 200
 
-        def patch(self, id, **kwargs):
-            self.check_etag('abc')
-            if id == 42:
-                return None, 404
-            return self.make_response({'id': id, 'method': 'PATCH'})
+    def put(self, id, **kwargs):
+        """PUT a resource."""
+        self.check_etag('abc')
+        if id == 42:
+            return self.make_response(None, code=404)
+        return self.make_response({'id': id, 'method': 'PUT'}, 200)
 
-        def post(self, id, **kwargs):
-            self.check_etag('abc')
-            if id == 42:
-                abort(404)
-            return {'id': id, 'method': 'POST'}
+    def patch(self, id, **kwargs):
+        """PATCH a resource."""
+        self.check_etag('abc')
+        if id == 42:
+            return None, 404
+        return self.make_response({'id': id, 'method': 'PATCH'})
+
+    def post(self, id, **kwargs):
+        """POST a resource."""
+        self.check_etag('abc')
+        if id == 42:
+            abort(404)
+        return {'id': id, 'method': 'POST'}
+
+    def delete(self, id, **kwargs):
+        """DELETE a resource."""
+        self.check_etag('abc')
+        if id == 42:
+            abort(404)
+        return {'id': id, 'method': 'DELETE'}
+
+
+def test_content_negotiation_method_view_global_serializers(app):
+    """Test ContentNegotiationMethodView. Test default serializers."""
+    _subtest_content_negotiation_method_view(app, _ObjectItem, params={
+        'serializers': {
+            'application/json': _obj_to_json_serializer,
+        }
+    })
+
+
+def test_content_negotiation_method_view_method_serializers(app):
+    """Test method serializers with no global serializers."""
+    _subtest_content_negotiation_method_view(app, _ObjectItem, params={
+        'method_serializers': {
+            'GET': {'application/json': _obj_to_json_serializer, },
+            'PUT': {'application/json': _obj_to_json_serializer, },
+            'POST': {'application/json': _obj_to_json_serializer, },
+            'PATCH': {'application/json': _obj_to_json_serializer, },
+            'DELETE': {'application/json': _obj_to_json_serializer, },
+        }
+    })
+
+
+def test_content_negotiation_method_view_method_serializers_2(app):
+    """Check that method serializers override global ones."""
+    def failing_serializer(data, code=200, headers=None):
+        raise Exception('Method serializer was not called.')
+
+    _subtest_content_negotiation_method_view(app, _ObjectItem, params={
+        'serializers': {
+            'application/json': failing_serializer,
+        },
+        'method_serializers': {
+            'GET': {'application/json': _obj_to_json_serializer, },
+            'PUT': {'application/json': _obj_to_json_serializer, },
+            'POST': {'application/json': _obj_to_json_serializer, },
+            'PATCH': {'application/json': _obj_to_json_serializer, },
+            'DELETE': {'application/json': _obj_to_json_serializer, },
+        }
+    })
+
+
+def test_content_negotiation_method_view_mixed_serializers(app):
+    """Test ContentNegotiationMethodView. Test partial method serializers"""
+    _subtest_content_negotiation_method_view(app, _ObjectItem, params={
+        'serializers': {
+            'application/json': _obj_to_json_serializer,
+        },
+        'method_serializers': {
+            'GET': {'application/json': _obj_to_json_serializer, },
+            'PUT': {'application/json': _obj_to_json_serializer, },
+        }
+    })
+
+
+def _subtest_content_negotiation_method_view(app, content_negotiated_class,
+                                             params):
+    """Test a given ContentNegotiatedMethodView subclass"""
 
     app.add_url_rule('/objects/<int:id>',
-                     view_func=ObjectItem
-                     .as_view(ObjectItem.view_name))
+                     view_func=content_negotiated_class
+                     .as_view(content_negotiated_class.view_name,
+                              **params))
 
     with app.test_client() as client:
         read_methods = [client.get, client.head]
-        write_methods = [client.patch, client.put, client.post]
+        write_methods = [client.patch, client.put, client.post, client.delete]
         all_methods = read_methods + write_methods
         method_names = {
             'GET': client.get,
             'POST': client.post,
             'PUT': client.put,
             'PATCH': client.patch,
+            'DELETE': client.delete,
         }
 
         def check_normal_response(res, method):
