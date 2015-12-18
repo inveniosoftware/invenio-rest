@@ -276,6 +276,130 @@ def test_content_negotiation_method_view_mixed_serializers(app):
     })
 
 
+def test_default_media_type(app):
+    """Test setting default media type."""
+    def failing_serializer(data, code=200, headers=None):
+        raise Exception('Wrong serializer was called.')
+    _subtest_content_negotiation_method_view(app, _ObjectItem, params={
+        'serializers': {
+            'application/mpeg': failing_serializer,
+            'application/json': _obj_to_json_serializer,
+        },
+        'default_media_type': 'application/json'
+    })
+
+
+def test_default_media_type_for_all_methods(app):
+    """Test setting default serializer for all methods."""
+    def failing_serializer(data, code=200, headers=None):
+        raise Exception('Wrong method serializer was called.')
+    _subtest_content_negotiation_method_view(app, _ObjectItem, params={
+        'method_serializers': {
+            'GET': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'PUT': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'POST': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'PATCH': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'DELETE': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+        },
+        'default_media_type': 'application/json'
+    })
+
+
+def test_default_method_media_type(app):
+    """Test setting default media type for each method."""
+    def failing_serializer(data, code=200, headers=None):
+        raise Exception('Wrong method serializer was called.')
+    _subtest_content_negotiation_method_view(app, _ObjectItem, params={
+        'method_serializers': {
+            'GET': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'PUT': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'POST': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'PATCH': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+            'DELETE': {
+                'application/json': _obj_to_json_serializer,
+                'application/mpeg': failing_serializer,
+            },
+        },
+        'default_method_media_type': {
+            'GET': 'application/json',
+            'PUT': 'application/json',
+            'POST': 'application/json',
+            'PATCH': 'application/json',
+            'DELETE': 'application/json',
+        },
+        'default_media_type': 'application/doesnotexist'
+    })
+
+
+def test_default_method_media_type_error(app):
+    """Test that there is an error when multiple serializers are given with no
+    default media type.
+    """
+    with pytest.raises(ValueError):
+        _ObjectItem(
+            method_serializers={
+                'GET': {
+                    'application/json': _obj_to_json_serializer,
+                    'application/json-patch+json': _obj_to_json_serializer,
+                },
+                'PUT': {
+                    'application/json': _obj_to_json_serializer,
+                    'application/json-patch+json': _obj_to_json_serializer,
+                },
+                'POST': {
+                    'application/json': _obj_to_json_serializer,
+                    'application/json-patch+json': _obj_to_json_serializer,
+                },
+                'PATCH': {
+                    'application/json': _obj_to_json_serializer,
+                    'application/json-patch+json': _obj_to_json_serializer,
+                },
+                'DELETE': {
+                    'application/json': _obj_to_json_serializer,
+                    'application/json-patch+json': _obj_to_json_serializer,
+                },
+            },
+        )
+
+
+def test_default_media_type_error(app):
+    """Test that there is an error when multiple serializers are given with no
+    default media type.
+    """
+    with pytest.raises(ValueError):
+        _ObjectItem(serializers={
+            'application/json': _obj_to_json_serializer,
+            'application/json-patch+json': _obj_to_json_serializer,
+        })
+
+
 def _subtest_content_negotiation_method_view(app, content_negotiated_class,
                                              params):
     """Test a given ContentNegotiatedMethodView subclass"""
@@ -316,10 +440,15 @@ def _subtest_content_negotiation_method_view(app, content_negotiated_class,
             assert unquote_etag(res.headers['ETag']) == \
                 unquote_etag(quote_etag('abc'))
 
-        # check valid call without condition
+        # check valid call with condition
         headers = [('Accept', 'application/json')]
         for method in all_methods:
             res = method('/objects/1', headers=headers)
+            check_normal_response(res, method)
+
+        # check valid call without condition
+        for method in all_methods:
+            res = method('/objects/1')
             check_normal_response(res, method)
 
         # check that non accepted mime types are not accepted
