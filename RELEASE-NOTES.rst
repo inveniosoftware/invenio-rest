@@ -2,7 +2,7 @@
  Invenio-REST v1.0.0
 =====================
 
-Invenio-REST v1.0.0 was released on November 19, 2015.
+Invenio-REST v1.0.0 was released on January 7, 2016.
 
 About
 -----
