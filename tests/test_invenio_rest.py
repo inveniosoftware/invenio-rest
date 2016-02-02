@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2015, 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -400,10 +400,116 @@ def test_default_media_type_error(app):
         })
 
 
+def test_get_method_serializers(app):
+    """Test get request method serializers."""
+    v = ContentNegotiatedMethodView(
+        method_serializers=dict(
+            GET={'text/plain': 'plain-get', 'text/html': 'html-get'},
+            POST={'text/plain': 'plain-post', 'text/html': 'html-post'}
+        ),
+        serializers={
+            'text/plain': 'plain',
+            'text/html': 'html',
+        },
+        default_media_type='application/json',
+        default_method_media_type=dict(
+            GET='text/plain',
+            POST='text/html',
+        )
+    )
+    # Default serializers
+    assert v.get_method_serializers('GET')[0] == v.method_serializers['GET']
+    assert v.get_method_serializers('HEAD')[0] == v.method_serializers['GET']
+    assert v.get_method_serializers('POST')[0] == v.method_serializers['POST']
+    assert v.get_method_serializers('PUT')[0] == v.serializers
+
+    # Default media type
+    assert v.get_method_serializers('GET')[1] == \
+        v.default_method_media_type['GET']
+    assert v.get_method_serializers('HEAD')[1] == \
+        v.default_method_media_type['GET']
+    assert v.get_method_serializers('POST')[1] == \
+        v.default_method_media_type['POST']
+    assert v.get_method_serializers('PUT')[1] == v.default_media_type
+
+
+def test_match_serializers(app):
+    """Test match serializers."""
+    v = ContentNegotiatedMethodView(
+        method_serializers=dict(
+            GET={
+                'application/json': 'json-get',
+                'application/marcxml+xml': 'xml-get'},
+            POST={
+                'application/json': 'json-post',
+                'application/marcxml+xml': 'xml-post'}
+        ),
+        serializers={
+            'application/json': 'json',
+            'application/marcxml+xml': 'xml',
+        },
+        default_media_type='application/json',
+        default_method_media_type=dict(
+            GET='application/json',
+            POST='application/marcxml+xml',
+        )
+    )
+
+    tests = [
+        # Should choose application/json
+        ('text/plain,application/json,*/*', 'GET', 'json-get'),
+        ('text/plain,application/json,*/*', 'HEAD', 'json-get'),
+        ('text/plain,application/json,*/*', 'POST', 'json-post'),
+        ('text/plain,application/json,*/*', 'PUT', 'json'),
+        # Should choose application/json (even with lower quality)
+        ('text/plain,application/json; q=0.5, */*', 'GET', 'json-get'),
+        ('text/plain,application/json; q=0.5, */*', 'HEAD', 'json-get'),
+        ('text/plain,application/json; q=0.5, */*', 'POST', 'json-post'),
+        ('text/plain,application/json; q=0.5, */*', 'PUT', 'json'),
+        # Should choose application/marcxml+xml
+        ('text/plain,application/marcxml+xml,*/*', 'GET', 'xml-get'),
+        ('text/plain,application/marcxml+xml,*/*', 'HEAD', 'xml-get'),
+        ('text/plain,application/marcxml+xml,*/*', 'POST', 'xml-post'),
+        ('text/plain,application/marcxml+xml,*/*', 'PUT', 'xml'),
+        # Should choose default defined by default_media_type and
+        # default_method_media_type
+        ('text/plain,*/*', 'GET', 'json-get'),
+        ('text/plain,*/*', 'HEAD', 'json-get'),
+        ('text/plain,*/*', 'POST', 'xml-post'),
+        ('text/plain,*/*', 'PUT', 'json'),
+        # Should choose none
+        ('text/plain', 'GET', None),
+        ('text/plain', 'HEAD', None),
+        ('text/plain', 'POST', None),
+        ('text/plain', 'PUT', None),
+        # Should choose default
+        (None, 'GET', 'json-get'),
+        (None, 'HEAD', 'json-get'),
+        (None, 'POST', 'xml-post'),
+        (None, 'PUT', 'json'),
+        # Should choose application/json
+        ('application/json', 'GET', 'json-get'),
+        # Should choose highest quality
+        ('application/json; q=0.5, application/marcxml+xml', 'GET', 'xml-get'),
+        ('application/json, application/marcxml+xml; q=0.5', 'GET',
+         'json-get'),
+        ('application/json; q=0.4, application/marcxml+xml; q=0.6', 'GET',
+         'xml-get'),
+        ('application/marcxml+xml; q=0.6, application/json; q=0.4', 'GET',
+         'xml-get'),
+    ]
+
+    for accept, method, expected_serializer in tests:
+        params = dict(headers=[('Accept', accept)]) if accept else {}
+        with app.test_request_context(**params):
+            assert v.match_serializers(*v.get_method_serializers(method)) == \
+                expected_serializer, "Accept: {0}, Method: {1}".format(
+                    accept, method)
+
+
 def _subtest_content_negotiation_method_view(app, content_negotiated_class,
                                              params):
-    """Test a given ContentNegotiatedMethodView subclass"""
-
+    """Test a given ContentNegotiatedMethodView subclass."""
     app.add_url_rule('/objects/<int:id>',
                      view_func=content_negotiated_class
                      .as_view(content_negotiated_class.view_name,

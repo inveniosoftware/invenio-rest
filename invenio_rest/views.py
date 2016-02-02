@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2015, 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -83,7 +83,7 @@ class ContentNegotiatedMethodView(MethodView):
         super(ContentNegotiatedMethodView, self).__init__(*args, **kwargs)
         self.serializers = serializers or None
         self.default_media_type = default_media_type
-        self.default_method_media_type = default_method_media_type
+        self.default_method_media_type = default_method_media_type or {}
 
         # set default default media_types if none has been given
         if self.serializers and not self.default_media_type:
@@ -95,7 +95,7 @@ class ContentNegotiatedMethodView(MethodView):
         # set method serializers
         self.method_serializers = ({key.upper(): func for key, func in
                                     method_serializers.items()} if
-                                   method_serializers else None)
+                                   method_serializers else {})
         # create default default method media_types dict if none has been given
         if self.method_serializers and not self.default_method_media_type:
             self.default_method_media_type = {}
@@ -114,6 +114,60 @@ class ContentNegotiatedMethodView(MethodView):
                                          'with no default media type'.format(
                                              http_method))
 
+    def get_method_serializers(self, http_method):
+        """Get request method serializers + default media type.
+
+        Grab serializers from ``method_serializers`` if defined, otherwise
+        returns the default serializers. Uses GET serializers for HEAD requests
+        if no HEAD serializers were specified.
+
+        The method also determines the default media type.
+
+        :param http_method: HTTP method as a string.
+        :returns: Tuple of serializers and default media type.
+        """
+        if http_method == 'HEAD' and 'HEAD' not in self.method_serializers:
+            http_method = 'GET'
+
+        return (
+            self.method_serializers.get(http_method, self.serializers),
+            self.default_method_media_type.get(
+                    http_method, self.default_media_type)
+        )
+
+    def match_serializers(self, serializers, default_media_type):
+        """Choose serializer for a given request based on accept headers.
+
+        :param serializers: dictionary of serializers.
+        :param default_media_type: the default media type.
+        :returns: best matching serializer based on client accept headers.
+        """
+        # Bail out fast if no accept headers were given.
+        if len(request.accept_mimetypes) == 0:
+            return serializers[default_media_type]
+
+        # Determine best match based on quality.
+        best_quality = -1
+        best = None
+        has_wildcard = False
+        for client_accept, quality in request.accept_mimetypes:
+            if quality <= best_quality:
+                continue
+            if client_accept == '*/*':
+                has_wildcard = True
+            for s in serializers.keys():
+                if s == client_accept and quality > 0:
+                    best_quality = quality
+                    best = s
+
+        # If no match found, but wildcard exists the use default media type.
+        if best is None and has_wildcard:
+            best = default_media_type
+
+        if best is not None:
+            return serializers[best]
+        return None
+
     def make_response(self, *args, **kwargs):
         """Create a Flask Response.
 
@@ -125,28 +179,11 @@ class ContentNegotiatedMethodView(MethodView):
         :raises :py:class:`werkzeug.exceptions.NotAcceptable`: if no media type
         matches current Accept header.
         """
-        serializers = self.serializers
-        default_media_type = self.default_media_type
-        if self.method_serializers:
-            http_method = request.method.upper()
-            # retrieve the serializer matching the current request method
-            if http_method in self.method_serializers:
-                serializers = self.method_serializers[http_method]
-                if self.default_method_media_type:
-                    default_media_type = \
-                        self.default_method_media_type[http_method]
-            elif http_method == 'HEAD' and 'GET' in self.method_serializers:
-                serializers = self.method_serializers['GET']
-                if self.default_method_media_type:
-                    default_media_type = \
-                        self.default_method_media_type['GET']
-        if serializers:
-            if len(request.accept_mimetypes) == 0:
-                best = default_media_type
-            else:
-                best = request.accept_mimetypes.best_match(serializers.keys())
-            if best is not None:
-                return serializers[best](*args, **kwargs)
+        serializer = self.match_serializers(
+            *self.get_method_serializers(request.method))
+
+        if serializer:
+            return serializer(*args, **kwargs)
         abort(406)
 
     def dispatch_request(self, *args, **kwargs):
