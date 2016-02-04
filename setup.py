@@ -36,7 +36,7 @@ history = open('CHANGES.rst').read()
 tests_require = [
     'check-manifest>=0.25',
     'coverage>=4.0',
-    'invenio_accounts>=1.0.0a8',
+    'invenio-accounts>=1.0.0a8',
     'isort>=4.2.2',
     'mock>=1.3.0',
     'pydocstyle>=1.0.0',
@@ -53,11 +53,24 @@ extras_require = {
     'docs': [
         'Sphinx>=1.3',
     ],
+    'mysql': [
+        'invenio-db[mysql]>=1.0.0a8',
+    ],
+    'postgresql': [
+        'invenio-db[postgresql]>=1.0.0a8',
+    ],
+    'sqlite': [
+        'invenio-db>=1.0.0a8',
+    ],
     'tests': tests_require,
 }
 
 extras_require['all'] = []
-for reqs in extras_require.values():
+for name, reqs in extras_require.items():
+    if name[0] == ':':
+        continue
+    if name in ('mysql', 'postgresql', 'sqlite'):
+        continue
     extras_require['all'].extend(reqs)
 
 setup_requires = [

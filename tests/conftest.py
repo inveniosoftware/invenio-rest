@@ -28,6 +28,8 @@
 from __future__ import absolute_import, print_function
 
 import os
+import shutil
+import tempfile
 
 import pytest
 from flask import Flask
@@ -38,12 +40,15 @@ from flask_menu import Menu
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint
 from invenio_db import InvenioDB, db
+from sqlalchemy_utils.functions import create_database, database_exists, \
+    drop_database
 
 
 @pytest.fixture()
 def app():
     """Flask application fixture."""
-    app = Flask('testapp')
+    instance_path = tempfile.mkdtemp()
+    app = Flask('testapp', instance_path=instance_path)
     app.config.update(
         TESTING=True
     )
@@ -65,7 +70,7 @@ def accounts():
         WTF_CSRF_ENABLED=False,
         ACCOUNTS_USE_CELERY=False,
         SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
-                                          'sqlite://'),
+                                          'sqlite:///test.db'),
         SERVER_NAME='example.com',
     )
     FlaskCLI(app)
@@ -74,11 +79,15 @@ def accounts():
     Menu(app)
     InvenioDB(app)
     with app.app_context():
+        if not database_exists(str(db.engine.url)):
+            create_database(str(db.engine.url))
         db.create_all()
 
     def teardown():
         with app.app_context():
-            db.drop_all()
+            drop_database(str(db.engine.url))
+        shutil.rmtree(app.instance_path)
+
     InvenioAccounts(app)
     app.register_blueprint(blueprint)
     return app
