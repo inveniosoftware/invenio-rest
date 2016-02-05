@@ -404,6 +404,7 @@ def test_get_method_serializers(app):
     """Test get request method serializers."""
     v = ContentNegotiatedMethodView(
         method_serializers=dict(
+            DELETE={'*/*': 'any-delete', },
             GET={'text/plain': 'plain-get', 'text/html': 'html-get'},
             POST={'text/plain': 'plain-post', 'text/html': 'html-post'}
         ),
@@ -432,11 +433,17 @@ def test_get_method_serializers(app):
         v.default_method_media_type['POST']
     assert v.get_method_serializers('PUT')[1] == v.default_media_type
 
+    assert v.get_method_serializers('DELETE')[0] == \
+        v.method_serializers['DELETE']
+
 
 def test_match_serializers(app):
     """Test match serializers."""
     v = ContentNegotiatedMethodView(
         method_serializers=dict(
+            DELETE={
+                '*/*': 'any-delete',
+            },
             GET={
                 'application/json': 'json-get',
                 'application/marcxml+xml': 'xml-get'},
@@ -497,6 +504,10 @@ def test_match_serializers(app):
          'xml-get'),
         ('application/marcxml+xml; q=0.6, application/json; q=0.4', 'GET',
          'xml-get'),
+        # Test delete
+        ('application/marcxml+xml; q=0.6, application/json; q=0.4', 'DELETE',
+         'any-delete'),
+        ('video/mp4', 'DELETE', 'any-delete'),
     ]
 
     for accept, method, expected_serializer in tests:

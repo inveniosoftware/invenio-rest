@@ -156,7 +156,7 @@ class ContentNegotiatedMethodView(MethodView):
             if client_accept == '*/*':
                 has_wildcard = True
             for s in serializers.keys():
-                if s == client_accept and quality > 0:
+                if s in ['*/*', client_accept] and quality > 0:
                     best_quality = quality
                     best = s
 
