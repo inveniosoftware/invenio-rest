@@ -127,8 +127,11 @@ def test_cors(app):
     with app.test_client() as client:
         res = client.get('/')
         assert not res.headers.get('Access-Control-Allow-Origin', False)
+        assert not res.headers.get('Access-Control-Expose-Headers', False)
         res = client.get('/', headers=[('Origin', 'http://example.com')])
         assert res.headers['Access-Control-Allow-Origin'] == '*'
+        assert len(res.headers['Access-Control-Expose-Headers'].split(',')) \
+            == len(app.config['CORS_EXPOSE_HEADERS'])
 
 
 def test_ratelimt(app):

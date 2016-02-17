@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2015, 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -50,14 +50,11 @@ class InvenioREST(object):
             try:
                 pkg_resources.get_distribution('Flask-CORS')
                 from flask_cors import CORS
-                CORS(
-                    app,
-                    resources=app.config['REST_CORS_RESOURCES'],
-                    allow_headers='Content-Type'
-                )
+                CORS(app)
+                # CORS can be configured using CORS_* configuration variables.
             except pkg_resources.DistributionNotFound:
                 raise RuntimeError(
-                    "You must use `pip install invenio-restapi[cors]` to "
+                    "You must use `pip install invenio-rest[cors]` to "
                     "enable CORS support.")
 
         self.limiter = Limiter(app)
@@ -99,9 +96,16 @@ class InvenioREST(object):
 
     def init_config(self, app):
         """Initialize configuration."""
-        app.config.setdefault('REST_CORS_RESOURCES', {
-            r'*': {'send_wildcard': True}
-        })
+        # Change CORS defaults.
+        app.config.setdefault('CORS_SEND_WILDCARD', True)
+        app.config.setdefault('CORS_EXPOSE_HEADERS', [
+            'ETag',
+            'Link',
+            'X-RateLimit-Limit',
+            'X-RateLimit-Remaining',
+            'X-RateLimit-Reset',
+            'Content-Type',
+        ])
         app.config.setdefault('REST_ENABLE_CORS', False)
         app.config.setdefault('RATELIMIT_GLOBAL', '5000/hour')
         app.config.setdefault('RATELIMIT_HEADERS_ENABLED', True)
