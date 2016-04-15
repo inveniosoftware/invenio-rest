@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 
 import pkg_resources
 from flask_limiter import Limiter
+from flask_limiter.util import get_ipaddr
 
 from .views import create_api_errorhandler
 
@@ -57,7 +58,7 @@ class InvenioREST(object):
                     "You must use `pip install invenio-rest[cors]` to "
                     "enable CORS support.")
 
-        self.limiter = Limiter(app)
+        self.limiter = Limiter(app, key_func=get_ipaddr)
 
         app.errorhandler(400)(create_api_errorhandler(
             status=400, message="Bad Request", ))
