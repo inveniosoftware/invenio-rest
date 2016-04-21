@@ -57,12 +57,13 @@ class SameContentException(Exception):
     one or more of the ETag values match.
     """
 
-    def __init__(self, etag):
+    def __init__(self, etag, last_modified=None):
         """Constructor.
 
         :param etag: matching etag
         """
         self.etag = etag
+        self.last_modified = last_modified
 
 
 class InvalidContentType(RESTException):

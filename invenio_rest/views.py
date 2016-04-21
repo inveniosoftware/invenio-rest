@@ -132,7 +132,7 @@ class ContentNegotiatedMethodView(MethodView):
         return (
             self.method_serializers.get(http_method, self.serializers),
             self.default_method_media_type.get(
-                    http_method, self.default_media_type)
+                http_method, self.default_media_type)
         )
 
     def match_serializers(self, serializers, default_media_type):
@@ -207,7 +207,10 @@ class ContentNegotiatedMethodView(MethodView):
         except SameContentException as e:
             res = make_response()
             res.status_code = 304
-            res.set_etag(e.etag)
+            if e.etag:
+                res.set_etag(e.etag)
+            if e.last_modified:
+                res.last_modified = e.last_modified
             return res
 
         if isinstance(result, Response):
@@ -248,3 +251,9 @@ class ContentNegotiatedMethodView(MethodView):
                     raise SameContentException(etag)
                 else:
                     abort(412)
+
+    def check_if_modified_since(self, dt, etag=None):
+        """Validate If-Modified-Since with current request conditions."""
+        dt = dt.replace(microsecond=0)
+        if request.if_modified_since and dt <= request.if_modified_since:
+            raise SameContentException(etag, last_modified=dt)

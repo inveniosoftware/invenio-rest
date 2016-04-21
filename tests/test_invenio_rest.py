@@ -28,6 +28,7 @@
 from __future__ import absolute_import, print_function
 
 import json
+from datetime import datetime
 
 import pkg_resources
 import pytest
@@ -188,13 +189,18 @@ class _ObjectItem(ContentNegotiatedMethodView):
     def __init__(self, *args, **kwargs):
         """Constructor."""
         super(_ObjectItem, self).__init__(*args, **kwargs)
+        self.modified = datetime.utcnow()
 
     def get(self, id, **kwargs):
         """GET a resource."""
         self.check_etag('abc')
+        self.check_if_modified_since(self.modified)
         if id == 42:
             abort(404)
-        return {'id': id, 'method': 'GET'}, 200
+        # return {'id': id, 'method': 'GET'}, 200
+        res = self.make_response({'id': id, 'method': 'GET'}, 200)
+        res.last_modified = self.modified
+        return res
 
     def put(self, id, **kwargs):
         """PUT a resource."""
@@ -620,3 +626,10 @@ def _subtest_content_negotiation_method_view(app, content_negotiated_class,
         for method in all_methods:
             res = method('/objects/1', headers=headers)
             assert res.status_code == 412
+
+        # check If-Modified-Since
+        res = client.get('/objects/1')
+        last_modified = res.headers['Last-Modified']
+        res = client.get(
+            '/objects/1', headers={'If-Modified-Since': last_modified})
+        assert res.status_code == 304
