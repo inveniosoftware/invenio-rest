@@ -42,7 +42,7 @@ def test_errors(app):
 
     @app.route('/contenttype', methods=['GET'])
     def test_content_type():
-        raise InvalidContentType(allowed_contet_types=['application/json'])
+        raise InvalidContentType(allowed_content_types=['application/json'])
 
     with app.test_client() as client:
         res = client.get('/')

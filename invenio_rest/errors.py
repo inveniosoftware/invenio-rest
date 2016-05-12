@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2015, 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -71,9 +71,9 @@ class InvalidContentType(RESTException):
 
     code = 415
 
-    def __init__(self, allowed_contet_types=None):
+    def __init__(self, allowed_content_types=None):
         """Initialize exception."""
-        self.allowed_contet_types = allowed_contet_types
+        self.allowed_content_types = allowed_content_types
         self.description = \
             "Invalid 'Content-Type' header. Expected one of: {0}".format(
-                ", ".join(allowed_contet_types))
+                ", ".join(allowed_content_types))
