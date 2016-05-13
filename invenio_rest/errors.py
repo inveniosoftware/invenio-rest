@@ -31,8 +31,37 @@ import json
 from werkzeug.exceptions import HTTPException
 
 
+class FieldError(object):
+    """Represents a field level error.
+
+    Note: this is not an actual exception.
+    """
+
+    def __init__(self, field, message, code=None):
+        """Init object."""
+        self.res = dict(field=field, message=message)
+        if code:
+            self.res['code'] = code
+
+    def to_dict(self):
+        """Convert to dictionary."""
+        return self.res
+
+
 class RESTException(HTTPException):
     """HTTP Exception delivering JSON error responses."""
+
+    errors = None
+
+    def __init__(self, errors=None, **kwargs):
+        """Initialize RESTException."""
+        super(RESTException, self).__init__(**kwargs)
+        if errors is not None:
+            self.errors = errors
+
+    def get_errors(self):
+        """Get errors."""
+        return [e.to_dict() for e in self.errors] if self.errors else None
 
     def get_description(self, environ=None):
         """Get the description."""
@@ -40,14 +69,41 @@ class RESTException(HTTPException):
 
     def get_body(self, environ=None):
         """Get the request body."""
-        return json.dumps(dict(
+        body = dict(
             status=self.code,
-            message=self.get_description(environ)
-        ))
+            message=self.get_description(environ),
+        )
+
+        errors = self.get_errors()
+        if self.errors:
+            body['errors'] = errors
+
+        return json.dumps(body)
 
     def get_headers(self, environ=None):
         """Get a list of headers."""
         return [('Content-Type', 'application/json')]
+
+
+class InvalidContentType(RESTException):
+    """Error for when an invalid content-type is provided."""
+
+    code = 415
+
+    def __init__(self, allowed_content_types=None, **kwargs):
+        """Initialize exception."""
+        super(InvalidContentType, self).__init__(**kwargs)
+        self.allowed_content_types = allowed_content_types
+        self.description = \
+            "Invalid 'Content-Type' header. Expected one of: {0}".format(
+                ", ".join(allowed_content_types))
+
+
+class RESTValidationError(RESTException):
+    """A standard REST validation error."""
+
+    code = 400
+    description = 'Validation error.'
 
 
 class SameContentException(Exception):
@@ -64,16 +120,3 @@ class SameContentException(Exception):
         """
         self.etag = etag
         self.last_modified = last_modified
-
-
-class InvalidContentType(RESTException):
-    """Error for when an invalid content-type is provided."""
-
-    code = 415
-
-    def __init__(self, allowed_content_types=None):
-        """Initialize exception."""
-        self.allowed_content_types = allowed_content_types
-        self.description = \
-            "Invalid 'Content-Type' header. Expected one of: {0}".format(
-                ", ".join(allowed_content_types))

@@ -29,7 +29,8 @@ from __future__ import absolute_import, print_function
 import json
 
 from invenio_rest import InvenioREST
-from invenio_rest.errors import InvalidContentType, RESTException
+from invenio_rest.errors import FieldError, InvalidContentType, \
+    RESTException, RESTValidationError
 
 
 def test_errors(app):
@@ -44,6 +45,11 @@ def test_errors(app):
     def test_content_type():
         raise InvalidContentType(allowed_content_types=['application/json'])
 
+    @app.route('/validationerror', methods=['GET'])
+    def test_validation_error():
+        raise RESTValidationError(
+            errors=[FieldError('myfield', 'mymessage', code=10)])
+
     with app.test_client() as client:
         res = client.get('/')
         assert res.status_code == 200
@@ -56,3 +62,13 @@ def test_errors(app):
         data = json.loads(res.get_data(as_text=True))
         assert data['status'] == 415
         assert 'application/json' in data['message']
+
+        res = client.get('/validationerror')
+        assert res.status_code == 400
+        data = json.loads(res.get_data(as_text=True))
+        print(data)
+        assert data['status'] == 400
+        assert data['message'] == 'Validation error.'
+        assert data['errors'] == [
+            dict(field='myfield', message='mymessage', code=10)
+        ]
