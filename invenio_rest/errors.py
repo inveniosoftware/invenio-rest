@@ -29,6 +29,7 @@ from __future__ import absolute_import, print_function
 import json
 
 from werkzeug.exceptions import HTTPException
+from werkzeug.http import http_date
 
 
 class FieldError(object):
@@ -106,17 +107,32 @@ class RESTValidationError(RESTException):
     description = 'Validation error.'
 
 
-class SameContentException(Exception):
+class SameContentException(RESTException):
     """304 Same Content exception.
 
     Exception thrown when request is GET or HEAD, ETag is If-None-Match and
     one or more of the ETag values match.
     """
 
-    def __init__(self, etag, last_modified=None):
+    code = 304
+    description = 'Same Content.'
+
+    def __init__(self, etag, last_modified=None, **kwargs):
         """Constructor.
 
         :param etag: matching etag
         """
+        super(SameContentException, self).__init__(**kwargs)
         self.etag = etag
         self.last_modified = last_modified
+
+    def get_response(self, environ=None):
+        """Get a list of headers."""
+        response = super(SameContentException, self).get_response(
+            environ=environ
+        )
+        if self.etag is not None:
+            response.set_etag(self.etag)
+        if self.last_modified is not None:
+            response.headers['Last-Modified'] = http_date(self.last_modified)
+        return response

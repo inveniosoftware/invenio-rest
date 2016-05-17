@@ -203,17 +203,9 @@ class ContentNegotiatedMethodView(MethodView):
         :raises :py:class:`werkzeug.exceptions.NotAcceptable`: if no media type
         matches current Accept header.
         """
-        try:
-            result = super(ContentNegotiatedMethodView, self) \
-                .dispatch_request(*args, **kwargs)
-        except SameContentException as e:
-            res = make_response()
-            res.status_code = 304
-            if e.etag:
-                res.set_etag(e.etag)
-            if e.last_modified:
-                res.last_modified = e.last_modified
-            return res
+        result = super(ContentNegotiatedMethodView, self).dispatch_request(
+            *args, **kwargs
+        )
 
         if isinstance(result, Response):
             return result

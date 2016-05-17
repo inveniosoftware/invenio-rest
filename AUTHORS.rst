@@ -1,6 +1,6 @@
 ..
     This file is part of Invenio.
-    Copyright (C) 2015 CERN.
+    Copyright (C) 2015, 2016 CERN.
 
     Invenio is free software; you can redistribute it
     and/or modify it under the terms of the GNU General Public License as
@@ -28,3 +28,4 @@ Authors
 REST API module for Invenio.
 
 - Lars Holm Nielsen <lars.holm.nielsen@cern.ch>
+- Jiri Kuncar <jiri.kuncar@cern.ch>
