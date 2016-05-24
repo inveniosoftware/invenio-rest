@@ -248,6 +248,7 @@ class ContentNegotiatedMethodView(MethodView):
 
     def check_if_modified_since(self, dt, etag=None):
         """Validate If-Modified-Since with current request conditions."""
-        dt = dt.replace(microsecond=0)
-        if request.if_modified_since and dt <= request.if_modified_since:
-            raise SameContentException(etag, last_modified=dt)
+        if dt:
+            dt = dt.replace(microsecond=0)
+            if request.if_modified_since and dt <= request.if_modified_since:
+                raise SameContentException(etag, last_modified=dt)
