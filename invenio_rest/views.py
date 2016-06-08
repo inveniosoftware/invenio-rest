@@ -214,7 +214,7 @@ class ContentNegotiatedMethodView(MethodView):
         else:
             return self.make_response(result)
 
-    def check_etag(self, etag):
+    def check_etag(self, etag, weak=False):
         """Validate the given ETag with current request conditions.
 
         Compare the given ETag to the ones in the request header If-Match
@@ -235,12 +235,17 @@ class ContentNegotiatedMethodView(MethodView):
         """
         # bool(:py:class:`werkzeug.datastructures.ETags`) is not consistent
         # in Python 3. bool(Etags()) == True even though it is empty.
-        if len(request.if_match.as_set()) > 0 or request.if_match.star_tag:
-            if etag not in request.if_match and '*' not in request.if_match:
+        if len(request.if_match.as_set(include_weak=weak)) > 0 or \
+                request.if_match.star_tag:
+            contains_etag = (request.if_match.contains_weak(etag) if weak
+                             else request.if_match.contains(etag))
+            if not contains_etag and '*' not in request.if_match:
                 abort(412)
-        if len(request.if_none_match.as_set()) > 0 or \
+        if len(request.if_none_match.as_set(include_weak=weak)) > 0 or \
                 request.if_none_match.star_tag:
-            if etag in request.if_none_match or '*' in request.if_none_match:
+            contains_etag = (request.if_none_match.contains_weak(etag) if weak
+                             else request.if_none_match.contains(etag))
+            if contains_etag or '*' in request.if_none_match:
                 if request.method in ('GET', 'HEAD'):
                     raise SameContentException(etag)
                 else:

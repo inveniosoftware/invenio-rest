@@ -32,13 +32,13 @@ from datetime import datetime
 
 import pkg_resources
 import pytest
-from flask import Flask, abort, make_response
+from flask import Flask, abort, make_response, request
 from flask.json import jsonify
 from mock import patch
-from werkzeug.exceptions import HTTPException
 from werkzeug.http import quote_etag, unquote_etag
 
 from invenio_rest import ContentNegotiatedMethodView, InvenioREST
+from invenio_rest.errors import RESTException
 
 
 def test_version():
@@ -88,10 +88,10 @@ def test_error_handlers(app):
 
 
 def test_custom_httpexception(app):
-    """Test custom HTTPException."""
+    """Test custom RESTException."""
     InvenioREST(app)
 
-    class CustomBadRequest(HTTPException):
+    class CustomBadRequest(RESTException):
         code = 400
         description = 'test'
 
@@ -195,7 +195,7 @@ class _ObjectItem(ContentNegotiatedMethodView):
 
     def get(self, id, **kwargs):
         """GET a resource."""
-        self.check_etag('abc')
+        self.check_etag('abc', weak='weak_etags' in request.args)
         self.check_if_modified_since(self.modified)
         if id == 42:
             abort(404)
@@ -206,28 +206,28 @@ class _ObjectItem(ContentNegotiatedMethodView):
 
     def put(self, id, **kwargs):
         """PUT a resource."""
-        self.check_etag('abc')
+        self.check_etag('abc', weak='weak_etags' in request.args)
         if id == 42:
             return self.make_response(None, code=404)
         return self.make_response({'id': id, 'method': 'PUT'}, 200)
 
     def patch(self, id, **kwargs):
         """PATCH a resource."""
-        self.check_etag('abc')
+        self.check_etag('abc', weak='weak_etags' in request.args)
         if id == 42:
             return None, 404
         return self.make_response({'id': id, 'method': 'PATCH'})
 
     def post(self, id, **kwargs):
         """POST a resource."""
-        self.check_etag('abc')
+        self.check_etag('abc', weak='weak_etags' in request.args)
         if id == 42:
             abort(404)
         return {'id': id, 'method': 'POST'}
 
     def delete(self, id, **kwargs):
         """DELETE a resource."""
-        self.check_etag('abc')
+        self.check_etag('abc', weak='weak_etags' in request.args)
         if id == 42:
             abort(404)
         return {'id': id, 'method': 'DELETE'}
@@ -608,11 +608,47 @@ def _subtest_content_negotiation_method_view(app, content_negotiated_class,
             res = method('/objects/1', headers=headers_nonmatch_star)
             assert res.status_code == 412
 
+        # check Matching If-None-Match with weak ETags
+        headers_nonmatch_match = [('Accept', 'application/json'),
+                                  ('If-None-Match', 'W/"xyz", W/"abc"')]
+        headers_nonmatch_star = [('Accept', 'application/json'),
+                                 ('If-None-Match', 'W/"xyz", "*"')]
+        query_string_weak_etags = {'weak_etags': True}
+        for method in read_methods:
+            res = method('/objects/1',
+                         headers=headers_nonmatch_match,
+                         query_string=query_string_weak_etags)
+            check_304_response(res)
+            res = method('/objects/1',
+                         headers=headers_nonmatch_star,
+                         query_string=query_string_weak_etags)
+            check_304_response(res)
+
+        for method in write_methods:
+            res = method('/objects/1',
+                         headers=headers_nonmatch_match,
+                         query_string=query_string_weak_etags)
+            assert res.status_code == 412
+            res = method('/objects/1',
+                         headers=headers_nonmatch_star,
+                         query_string=query_string_weak_etags)
+            assert res.status_code == 412
+
         # check non matching If-None-Match
         headers = [('Accept', 'application/json'),
                    ('If-None-Match', '"xyz", "def"')]
         for method in all_methods:
             res = method('/objects/1', headers=headers)
+            check_normal_response(res, method)
+
+        # check non matching If-None-Match with weak ETags
+        headers = [('Accept', 'application/json'),
+                   ('If-None-Match', 'W/"xyz", W/"def"')]
+        query_string_weak_etags = {'weak_etags': True}
+        for method in all_methods:
+            res = method('/objects/1',
+                         headers=headers,
+                         query_string=query_string_weak_etags)
             check_normal_response(res, method)
 
         # check matching If-Match
@@ -622,11 +658,31 @@ def _subtest_content_negotiation_method_view(app, content_negotiated_class,
             res = method('/objects/1', headers=headers)
             check_normal_response(res, method)
 
+        # check matching If-Match with weak ETags
+        headers = [('Accept', 'application/json'),
+                   ('If-Match', 'W/"abc", W/"def"')]
+        query_string_weak_etags = {'weak_etags': True}
+        for method in all_methods:
+            res = method('/objects/1',
+                         headers=headers,
+                         query_string=query_string_weak_etags)
+            check_normal_response(res, method)
+
         # check non matching If-Match
         headers = [('Accept', 'application/json'),
                    ('If-Match', '"xyz", "def"')]
         for method in all_methods:
             res = method('/objects/1', headers=headers)
+            assert res.status_code == 412
+
+        # check non matching If-Match with weak ETags
+        headers = [('Accept', 'application/json'),
+                   ('If-Match', 'W/"xyz", W/"def"')]
+        query_string_weak_etags = {'weak_etags': True}
+        for method in all_methods:
+            res = method('/objects/1',
+                         headers=headers,
+                         query_string=query_string_weak_etags)
             assert res.status_code == 412
 
         # check If-Modified-Since
