@@ -37,7 +37,6 @@ def _warn_node(self, msg, node):
 
 sphinx.environment.BuildEnvironment.warn_node = _warn_node
 
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

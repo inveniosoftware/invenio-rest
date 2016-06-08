@@ -119,6 +119,8 @@ def test_cors_loading(app):
 def test_cors(app):
     """Test CORS support."""
     app.config['REST_ENABLE_CORS'] = True
+    app.config['CORS_ALWAYS_SEND'] = False
+
     InvenioREST(app)
 
     @app.route('/')
