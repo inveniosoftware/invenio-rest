@@ -35,17 +35,26 @@ from werkzeug.http import http_date
 class FieldError(object):
     """Represents a field level error.
 
-    Note: this is not an actual exception.
+    .. note:: This is not an actual exception.
     """
 
     def __init__(self, field, message, code=None):
-        """Init object."""
+        """Init object.
+
+        :param field: Field name.
+        :param message: The text message to show.
+        :param code: The HTTP status to return. (Default: ``None``)
+        """
         self.res = dict(field=field, message=message)
         if code:
             self.res['code'] = code
 
     def to_dict(self):
-        """Convert to dictionary."""
+        """Convert to dictionary.
+
+        :returns: A dictionary with field, message and, if initialized, the
+            HTTP status code.
+        """
         return self.res
 
 
@@ -61,7 +70,10 @@ class RESTException(HTTPException):
             self.errors = errors
 
     def get_errors(self):
-        """Get errors."""
+        """Get errors.
+
+        :returns: A list containing a dictionary representing the errors.
+        """
         return [e.to_dict() for e in self.errors] if self.errors else None
 
     def get_description(self, environ=None):
@@ -87,9 +99,10 @@ class RESTException(HTTPException):
 
 
 class InvalidContentType(RESTException):
-    """Error for when an invalid content-type is provided."""
+    """Error for when an invalid Content-Type is provided."""
 
     code = 415
+    """HTTP Status code."""
 
     def __init__(self, allowed_content_types=None, **kwargs):
         """Initialize exception."""
@@ -104,7 +117,10 @@ class RESTValidationError(RESTException):
     """A standard REST validation error."""
 
     code = 400
+    """HTTP Status code."""
+
     description = 'Validation error.'
+    """Error description."""
 
 
 class SameContentException(RESTException):
@@ -115,12 +131,16 @@ class SameContentException(RESTException):
     """
 
     code = 304
+    """HTTP Status code."""
+
     description = 'Same Content.'
+    """Error description."""
 
     def __init__(self, etag, last_modified=None, **kwargs):
         """Constructor.
 
         :param etag: matching etag
+        :param last_modified: The last modefied date. (Default: ``None``)
         """
         super(SameContentException, self).__init__(**kwargs)
         self.etag = etag

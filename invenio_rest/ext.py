@@ -30,6 +30,7 @@ import pkg_resources
 from flask_limiter import Limiter
 from flask_limiter.util import get_ipaddr
 
+from . import config
 from .views import create_api_errorhandler
 
 
@@ -37,13 +38,21 @@ class InvenioREST(object):
     """Invenio-REST extension."""
 
     def __init__(self, app=None):
-        """Extension initialization."""
+        """Extension initialization.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
         self.limiter = None
         if app:
             self.init_app(app)
 
     def init_app(self, app):
-        """Flask application initialization."""
+        """Flask application initialization.
+
+        Initialize the Rate-Limiter, CORS and error handlers.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
         self.init_config(app)
 
         # Enable CORS support if desired
@@ -55,58 +64,54 @@ class InvenioREST(object):
                 # CORS can be configured using CORS_* configuration variables.
             except pkg_resources.DistributionNotFound:
                 raise RuntimeError(
-                    "You must use `pip install invenio-rest[cors]` to "
-                    "enable CORS support.")
+                    'You must use `pip install invenio-rest[cors]` to '
+                    'enable CORS support.')
 
         self.limiter = Limiter(app, key_func=get_ipaddr)
 
         app.errorhandler(400)(create_api_errorhandler(
-            status=400, message="Bad Request", ))
+            status=400, message='Bad Request'))
         app.errorhandler(401)(create_api_errorhandler(
-            status=401, message="Unauthorized", ))
+            status=401, message='Unauthorized'))
         app.errorhandler(403)(create_api_errorhandler(
-            status=403, message="Forbidden", ))
+            status=403, message='Forbidden'))
         app.errorhandler(404)(create_api_errorhandler(
-            status=404, message="Not Found", ))
+            status=404, message='Not Found'))
         app.errorhandler(405)(create_api_errorhandler(
-            status=405, message="Method Not Allowed", ))
+            status=405, message='Method Not Allowed'))
         app.errorhandler(406)(create_api_errorhandler(
-            status=406, message="Not Acceptable", ))
+            status=406, message='Not Acceptable'))
         app.errorhandler(409)(create_api_errorhandler(
-            status=409, message="Conflict", ))
+            status=409, message='Conflict'))
         app.errorhandler(410)(create_api_errorhandler(
-            status=410, message="Gone", ))
+            status=410, message='Gone'))
         app.errorhandler(412)(create_api_errorhandler(
-            status=412, message="Precondition Failed", ))
+            status=412, message='Precondition Failed'))
         app.errorhandler(415)(create_api_errorhandler(
-            status=415, message="Unsupported media type", ))
+            status=415, message='Unsupported media type'))
         app.errorhandler(429)(create_api_errorhandler(
-            status=429, message="Rate limit exceeded", ))
+            status=429, message='Rate limit exceeded'))
         app.errorhandler(500)(create_api_errorhandler(
-            status=500, message="Internal Server Error", ))
+            status=500, message='Internal Server Error'))
         app.errorhandler(501)(create_api_errorhandler(
-            status=501, message="Not Implemented", ))
+            status=501, message='Not Implemented'))
         app.errorhandler(502)(create_api_errorhandler(
-            status=502, message="Bad Gateway", ))
+            status=502, message='Bad Gateway'))
         app.errorhandler(503)(create_api_errorhandler(
-            status=503, message="Service Unavailable", ))
+            status=503, message='Service Unavailable'))
         app.errorhandler(504)(create_api_errorhandler(
-            status=504, message="Gateway Timeout", ))
+            status=504, message='Gateway Timeout'))
 
         app.extensions['invenio-rest'] = self
 
     def init_config(self, app):
-        """Initialize configuration."""
-        # Change CORS defaults.
-        app.config.setdefault('CORS_SEND_WILDCARD', True)
-        app.config.setdefault('CORS_EXPOSE_HEADERS', [
-            'ETag',
-            'Link',
-            'X-RateLimit-Limit',
-            'X-RateLimit-Remaining',
-            'X-RateLimit-Reset',
-            'Content-Type',
-        ])
-        app.config.setdefault('REST_ENABLE_CORS', False)
-        app.config.setdefault('RATELIMIT_GLOBAL', '5000/hour')
-        app.config.setdefault('RATELIMIT_HEADERS_ENABLED', True)
+        """Initialize configuration.
+
+        .. note:: Change Flask-CORS and Flask-Limiter defaults.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
+        config_apps = ['REST_', 'CORS_', 'RATELIMIT_']
+        for k in dir(config):
+            if any([k.startswith(prefix) for prefix in config_apps]):
+                app.config.setdefault(k, getattr(config, k))

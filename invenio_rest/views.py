@@ -34,7 +34,18 @@ from .errors import RESTException, SameContentException
 
 
 def create_api_errorhandler(**kwargs):
-    """Create an API error handler."""
+    r"""Create an API error handler.
+
+    E.g. register a 404 error:
+
+    .. code-block:: python
+
+        app.errorhandler(404)(create_api_errorhandler(
+            status=404, message='Not Found'))
+
+    :param \*\*kwargs: It contains the ``'status'`` and the ``'message'``
+        to describe the error.
+    """
     def api_errorhandler(e):
         if isinstance(e, RESTException):
             return e.get_response()
@@ -58,7 +69,7 @@ class ContentNegotiatedMethodView(MethodView):
         """Constructor.
 
         Register the serializing functions used to transform request
-        handlers' results into :py:class:`Flask.Response` instances.
+        handlers' results into :py:class:`flask.Response` instances.
 
         Serializing functions will receive all named and non named arguments
         provided to make_response or returned by request handling methods.
@@ -140,9 +151,9 @@ class ContentNegotiatedMethodView(MethodView):
     def match_serializers(self, serializers, default_media_type):
         """Choose serializer for a given request based on accept headers.
 
-        :param serializers: dictionary of serializers.
-        :param default_media_type: the default media type.
-        :returns: best matching serializer based on client accept headers.
+        :param serializers: Dictionary of serializers.
+        :param default_media_type: The default media type.
+        :returns: Best matching serializer based on client accept headers.
         """
         # Bail out fast if no accept headers were given.
         if len(request.accept_mimetypes) == 0:
@@ -176,10 +187,10 @@ class ContentNegotiatedMethodView(MethodView):
         Dispatch the given arguments to the serializer best matching the
         current request's Accept header.
 
-        :return: the response created by the serializing function.
-        :rtype: :py:class:`Flask.Response`
-        :raises :py:class:`werkzeug.exceptions.NotAcceptable`: if no media type
-        matches current Accept header.
+        :return: The response created by the serializing function.
+        :rtype: :class:`flask.Response`
+        :raises werkzeug.exceptions.NotAcceptable: If no media type
+            matches current Accept header.
         """
         serializer = self.match_serializers(
             *self.get_method_serializers(request.method))
@@ -192,16 +203,16 @@ class ContentNegotiatedMethodView(MethodView):
         """Dispatch current request.
 
         Dispatch the current request using
-        :py:meth:`flask.views.MethodView.dispatch_request` then, if the result
-        is not already a :py:class:`Flask.Response`, search for the
+        :class:`flask.views.MethodView` `dispatch_request()` then, if the
+        result is not already a :py:class:`flask.Response`, search for the
         serializing function which matches the best the current request's
-        Accept header and use it to build the :py:class:`Flask.Response`.
+        Accept header and use it to build the :py:class:`flask.Response`.
 
-        :return: the response returned by the request handler or created by
-        the serializing function.
-        :rtype: :py:class:`Flask.Response`
-        :raises :py:class:`werkzeug.exceptions.NotAcceptable`: if no media type
-        matches current Accept header.
+        :rtype: :class:`flask.Response`
+        :raises werkzeug.exceptions.NotAcceptable: If no media type matches
+            current Accept header.
+        :returns: The response returned by the request handler or created by
+            the serializing function.
         """
         result = super(ContentNegotiatedMethodView, self).dispatch_request(
             *args, **kwargs
@@ -223,15 +234,15 @@ class ContentNegotiatedMethodView(MethodView):
         The result is unspecified for requests having If-Match and
         If-None-Match being both set.
 
-        :param str etag: the ETag of the current resource. For PUT and PATCH
-        it is the one before any modification of the resource. This ETag will
-        be tested with the Accept header conditions. The given ETag should not
-        be quoted.
-        :raises :py:class:`werkzeug.exceptions.PreconditionFailed`: if the
-        condition is not met.
-        :raises :py:class:`werkzeug.exceptions.SameContentException`: if the
-        the request is GET or HEAD and the If-None-Match condition is not
-        met.
+        :param str etag: The ETag of the current resource. For PUT and PATCH
+            it is the one before any modification of the resource. This ETag
+            will be tested with the Accept header conditions. The given ETag
+            should not be quoted.
+        :raises werkzeug.exceptions.PreconditionFailed: If the
+            condition is not met.
+        :raises invenio_rest.errors.SameContentException: If the
+            the request is GET or HEAD and the If-None-Match condition is not
+            met.
         """
         # bool(:py:class:`werkzeug.datastructures.ETags`) is not consistent
         # in Python 3. bool(Etags()) == True even though it is empty.

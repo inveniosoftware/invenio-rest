@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,29 +22,40 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Decorators for testing certain assertions."""
+"""Invenio REST configuration."""
 
-from __future__ import absolute_import, print_function
+from __future__ import unicode_literals
 
-from functools import wraps
+CORS_SEND_WILDCARD = True
+"""Sending wildcard CORS header.
 
-from flask import request
+Overwrite Flask-CORS configuration.
+"""
 
-from .errors import InvalidContentType
+CORS_EXPOSE_HEADERS = [
+    'ETag',
+    'Link',
+    'X-RateLimit-Limit',
+    'X-RateLimit-Remaining',
+    'X-RateLimit-Reset',
+    'Content-Type',
+]
+"""Expose the following headers.
 
+.. note:: Overwrite Flask-CORS configuration.
+"""
 
-def require_content_types(*allowed_content_types):
-    r"""Decorator to test if proper Content-Type is provided.
+REST_ENABLE_CORS = False
+"""Enable CORS configuration. (Default: ``False``)"""
 
-    :param \*allowed_content_types: List of allowed content types.
-    :raises invenio_rest.errors.InvalidContentType: It's rised if a content
-        type not allowed is required.
-    """
-    def decorator(f):
-        @wraps(f)
-        def inner(*args, **kwargs):
-            if request.content_type not in allowed_content_types:
-                raise InvalidContentType(allowed_content_types)
-            return f(*args, **kwargs)
-        return inner
-    return decorator
+RATELIMIT_GLOBAL = '5000/hour'
+"""Global rate limit.
+
+.. note:: Overwrite Flask-Limiter configuration.
+"""
+
+RATELIMIT_HEADERS_ENABLED = True
+"""Enable rate limit headers. (Default: ``True``)
+
+.. note:: Overwrite Flask-Limiter configuration.
+"""

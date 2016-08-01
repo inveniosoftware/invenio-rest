@@ -25,6 +25,29 @@
 API Docs
 ========
 
-invenio_rest
-------------
+.. automodule:: invenio_rest.ext
+   :members:
 
+Configuration
+-------------
+
+.. automodule:: invenio_rest.config
+   :members:
+
+Decorators
+----------
+
+.. automodule:: invenio_rest.decorators
+   :members:
+
+Errors
+------
+
+.. automodule:: invenio_rest.errors
+   :members:
+
+Views
+-----
+
+.. automodule:: invenio_rest.views
+   :members:
