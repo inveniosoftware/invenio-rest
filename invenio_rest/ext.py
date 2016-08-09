@@ -89,6 +89,8 @@ class InvenioREST(object):
             status=412, message='Precondition Failed'))
         app.errorhandler(415)(create_api_errorhandler(
             status=415, message='Unsupported media type'))
+        app.errorhandler(422)(create_api_errorhandler(
+            status=422, message='Unprocessable Entity'))
         app.errorhandler(429)(create_api_errorhandler(
             status=429, message='Rate limit exceeded'))
         app.errorhandler(500)(create_api_errorhandler(

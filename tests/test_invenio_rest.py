@@ -71,8 +71,8 @@ def test_error_handlers(app):
         abort(status_code)
 
     error_codes = [
-        400, 401, 403, 404, 405, 406, 409, 410, 412, 415, 429, 500, 501, 502,
-        503, 504]
+        400, 401, 403, 404, 405, 406, 409, 410, 412, 422, 415, 429, 500, 501,
+        502, 503, 504]
 
     with app.test_client() as client:
         verbs = [client.get, client.post, client.put, client.delete,
