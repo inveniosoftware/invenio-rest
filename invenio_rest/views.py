@@ -69,29 +69,32 @@ class ContentNegotiatedMethodView(MethodView):
         """Constructor.
 
         Register the serializing functions used to transform request
-        handlers' results into :py:class:`flask.Response` instances.
+        handlers' results into :class:`flask.Response` instances.
 
         Serializing functions will receive all named and non named arguments
         provided to make_response or returned by request handling methods.
         Recommened prototype is:
+
+        .. code-block:: python
+
             serializer(data, code=200, headers=None)
 
         Serializing functions can also be overriden by setting
-        self.serializers.
+        ``self.serializers``.
 
-        :param serializers: a dict of mediatype -> serializer function
-        :param method_serializers: a dict of HTTP method name (GET, PUT,
+        :param serializers: A mapping from mediatype to a serializer function.
+        :param method_serializers: A mapping of HTTP method name (GET, PUT,
             PATCH, POST, DELETE) -> dict(mediatype -> serializer function). If
             set, it overrides the serializers dict.
-        :param default_media_type: default media type used if no accept type
+        :param default_media_type: Default media type used if no accept type
             has been provided and global serializers are used for the request.
             Can be None if there is only one global serializer or None. This
             media type is used for method serializers too if
-            default_method_media_type is not set.
-        :param default_method_media_type: default media type used if no accept
+            ``default_method_media_type`` is not set.
+        :param default_method_media_type: Default media type used if no accept
             type has been provided and a specific method serializers are used
-            for the request. Can be None if the method has only one serializer
-            or None.
+            for the request. Can be ``None`` if the method has only one
+            serializer or ``None``.
         """
         super(ContentNegotiatedMethodView, self).__init__(*args, **kwargs)
         self.serializers = serializers or None
@@ -123,7 +126,7 @@ class ContentNegotiatedMethodView(MethodView):
                         self.default_method_media_type[http_method] = \
                             default_media_type
                     else:
-                        raise ValueError('Multiple serializers for method {}'
+                        raise ValueError('Multiple serializers for method {0}'
                                          'with no default media type'.format(
                                              http_method))
 

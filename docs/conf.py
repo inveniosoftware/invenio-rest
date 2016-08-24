@@ -137,8 +137,8 @@ html_theme_options = {
     'github_banner': True,
     'show_powered_by': False,
     'extra_nav_links': {
-        'invenio-rest@GitHub': 'http://github.com/inveniosoftware/invenio-rest',
-        'invenio-rest@PyPI': 'http://pypi.python.org/pypi/invenio-rest/',
+        'invenio-rest@GitHub': 'https://github.com/inveniosoftware/invenio-rest',
+        'invenio-rest@PyPI': 'https://pypi.python.org/pypi/invenio-rest/',
     }
 }
 
@@ -337,3 +337,6 @@ intersphinx_mapping = {
         'http://werkzeug.pocoo.org/docs/0.11', None
     ),
 }
+
+# Autodoc configuraton.
+autoclass_content = 'both'
