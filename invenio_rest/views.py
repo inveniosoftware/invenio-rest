@@ -66,18 +66,12 @@ class ContentNegotiatedMethodView(MethodView):
     def __init__(self, serializers=None, method_serializers=None,
                  default_media_type=None, default_method_media_type=None,
                  *args, **kwargs):
-        """Constructor.
-
-        Register the serializing functions used to transform request
-        handlers' results into :class:`flask.Response` instances.
+        """Register the serializing functions.
 
         Serializing functions will receive all named and non named arguments
-        provided to make_response or returned by request handling methods.
-        Recommened prototype is:
-
-        .. code-block:: python
-
-            serializer(data, code=200, headers=None)
+        provided to ``make_response`` or returned by request handling methods.
+        Recommened prototype is: ``serializer(data, code=200, headers=None)``
+        and it should return :class:`flask.Response` instances.
 
         Serializing functions can also be overriden by setting
         ``self.serializers``.
