@@ -31,8 +31,14 @@ Run example development server:
 
    $ pip install -e .[all]
    $ cd examples
-   $ export FLASK_APP=app.py
-   $ flask run
+   $ ./app-setup.sh
+   $ ./app-fixtures.sh
+
+Run example development server:
+
+.. code-block:: console
+
+    $ FLASK_APP=app.py flask run --debugger -p 5000
 
 Load the list of records:
 
@@ -40,13 +46,19 @@ Load the list of records:
 
    $ curl -v -XGET http://0.0.0.0:5000/records/?q=title:Test
    $ curl -v -XGET http://0.0.0.0:5000/records/?q=title:Test \
-       Accept:application/xml
+       -H Accept:application/xml
+
+To be able to uninstall the example app:
+
+.. code-block:: console
+
+    $ ./app-teardown.sh
 """
 
 from __future__ import absolute_import, print_function
 
 import os
-import xmlrpclib
+import dicttoxml
 
 from flask import Blueprint, Flask, jsonify, make_response
 
@@ -60,7 +72,7 @@ def json_v1_search(search_result):
 
 def xml_v1_search(search_result):
     """Serialize records as text."""
-    return make_response(xmlrpclib.dumps((search_result,), allow_none=True))
+    return make_response(dicttoxml.dicttoxml((search_result,)))
 
 
 class RecordsListResource(ContentNegotiatedMethodView):
@@ -87,10 +99,6 @@ class RecordsListResource(ContentNegotiatedMethodView):
 
 # Create Flask application
 app = Flask(__name__)
-app.config.update(
-    SQLALCHEMY_DATABASE_URI=os.environ.get('SQLALCHEMY_DATABASE_URI',
-                                           'sqlite:///app.db'),
-)
 
 InvenioREST(app)
 
