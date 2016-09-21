@@ -24,7 +24,7 @@ Installation
 Documentation
 -------------
 
-   http://pythonhosted.org/invenio-rest/
+   https://invenio-rest.readthedocs.io
 
 Happy hacking and thanks for flying Invenio-REST.
 
