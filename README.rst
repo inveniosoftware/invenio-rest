@@ -46,4 +46,4 @@ REST API module for Invenio.
 *This is an experimental developer preview release.*
 
 * Free software: GPLv2 license
-* Documentation: https://invenio-rest.readthedocs.io
+* Documentation: https://invenio-rest.readthedocs.io/
