@@ -43,7 +43,7 @@ def require_content_types(*allowed_content_types):
     def decorator(f):
         @wraps(f)
         def inner(*args, **kwargs):
-            if request.content_type not in allowed_content_types:
+            if request.mimetype not in allowed_content_types:
                 raise InvalidContentType(allowed_content_types)
             return f(*args, **kwargs)
         return inner

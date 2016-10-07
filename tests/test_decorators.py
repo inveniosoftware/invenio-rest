@@ -46,6 +46,9 @@ def test_require_content_types(app):
         assert res.status_code == 200
         res = client.post("/", content_type='text/plain', data="test")
         assert res.status_code == 200
+        res = client.post("/", content_type='application/json;charset=utf-8',
+                          data="{}")
+        assert res.status_code == 200
         res = client.post("/", content_type='application/xml', data="<d></d>")
         assert res.status_code == 415
         data = json.loads(res.get_data(as_text=True))
