@@ -15,16 +15,6 @@ this:
 
    $ pip install invenio-rest[cors]
 
-Configuration
--------------
-
-===================== =================================================
-`REST_ENABLE_CORS`    Set to ``True`` to enable Cross-Origin Resource
-                      Sharing. Defaults to ``False``.
-`REST_CORS_RESOURCES` Dictionary for configuring CORS for endpoints.
-                      See Flask-CORS for further details.
-===================== =================================================
-
 Please also see
 `Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_ and
 `Flask-CORS <https://flask-cors.readthedocs.io/en/latest/>`_ for many more

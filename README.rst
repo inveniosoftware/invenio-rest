@@ -1,6 +1,6 @@
 ..
     This file is part of Invenio.
-    Copyright (C) 2015, 2016 CERN.
+    Copyright (C) 2015, 2016, 2017 CERN.
 
     Invenio is free software; you can redistribute it
     and/or modify it under the terms of the GNU General Public License as
@@ -40,10 +40,11 @@
 .. image:: https://img.shields.io/github/license/inveniosoftware/invenio-rest.svg
         :target: https://github.com/inveniosoftware/invenio-rest/blob/master/LICENSE
 
-
 REST API module for Invenio.
 
 *This is an experimental developer preview release.*
 
-* Free software: GPLv2 license
-* Documentation: https://invenio-rest.readthedocs.io/
+* This module allows you to create a REST API with standard error codes...
+
+Further documentation is available on
+https://invenio-rest.readthedocs.io/

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -26,10 +26,25 @@
 
 from __future__ import unicode_literals
 
+
+CORS_RESOURCES = '*'
+"""Dictionary for configuring CORS for endpoints.
+
+   See Flask-CORS for further details.
+
+.. note:: Overwrite
+   `Flask-CORS
+   <https://flask-cors.readthedocs.io/en/latest/api.html#flask_cors.CORS>`_
+   configuration.
+"""
+
 CORS_SEND_WILDCARD = True
 """Sending wildcard CORS header.
 
-Overwrite Flask-CORS configuration.
+.. note:: Overwrite
+   `Flask-CORS
+   <https://flask-cors.readthedocs.io/en/latest/api.html#flask_cors.CORS>`_
+   configuration.
 """
 
 CORS_EXPOSE_HEADERS = [
@@ -42,7 +57,10 @@ CORS_EXPOSE_HEADERS = [
 ]
 """Expose the following headers.
 
-.. note:: Overwrite Flask-CORS configuration.
+.. note:: Overwrite
+   `Flask-CORS
+   <https://flask-cors.readthedocs.io/en/latest/api.html#flask_cors.CORS>`_
+   configuration.
 """
 
 REST_ENABLE_CORS = False
@@ -51,11 +69,15 @@ REST_ENABLE_CORS = False
 RATELIMIT_GLOBAL = '5000/hour'
 """Global rate limit.
 
-.. note:: Overwrite Flask-Limiter configuration.
+.. note:: Overwrite
+   Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_
+   configuration.
 """
 
 RATELIMIT_HEADERS_ENABLED = True
 """Enable rate limit headers. (Default: ``True``)
 
-.. note:: Overwrite Flask-Limiter configuration.
+.. note:: Overwrite
+   Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_
+   configuration.
 """
