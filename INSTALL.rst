@@ -14,8 +14,3 @@ this:
 .. code-block:: console
 
    $ pip install invenio-rest[cors]
-
-Please also see
-`Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_ and
-`Flask-CORS <https://flask-cors.readthedocs.io/en/latest/>`_ for many more
-configuration options.

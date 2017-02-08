@@ -9,8 +9,6 @@ About
 
 REST API module for Invenio.
 
-*This is an experimental developer preview release.*
-
 What's new
 ----------
 

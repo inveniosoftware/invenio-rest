@@ -22,7 +22,13 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Invenio REST configuration."""
+"""Invenio REST configuration.
+
+Please also see
+`Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_ and
+`Flask-CORS <https://flask-cors.readthedocs.io/en/latest/>`__ for many more
+configuration options.
+"""
 
 from __future__ import unicode_literals
 
@@ -32,7 +38,7 @@ CORS_RESOURCES = '*'
 
    See Flask-CORS for further details.
 
-.. note:: Overwrite
+.. note:: Overwrites
    `Flask-CORS
    <https://flask-cors.readthedocs.io/en/latest/api.html#flask_cors.CORS>`_
    configuration.
