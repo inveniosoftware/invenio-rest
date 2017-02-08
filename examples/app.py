@@ -23,9 +23,10 @@
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 
-"""Minimal Flask application example for development.
+"""Minimal Flask application example.
 
-Run example development server:
+First install Invenio-REST, setup the application and load
+fixture data by running:
 
 .. code-block:: console
 
@@ -34,21 +35,32 @@ Run example development server:
    $ ./app-setup.sh
    $ ./app-fixtures.sh
 
-Run example development server:
+Next, start the development server:
 
 .. code-block:: console
 
-    $ FLASK_APP=app.py flask run --debugger -p 5000
+    $ export FLASK_APP=app.py FLASK_DEBUG=1
+    $ flask run
 
-Load the list of records:
+and use cURL to explore the simplistic REST API:
 
 .. code-block:: console
 
-   $ curl -v -XGET http://0.0.0.0:5000/records/?q=title:Test
-   $ curl -v -XGET http://0.0.0.0:5000/records/?q=title:Test \
+   $ curl -v -XGET http://0.0.0.0:5000/records/
+   $ curl -v -XGET http://0.0.0.0:5000/records/ \\
        -H Accept:application/xml
 
-To be able to uninstall the example app:
+The example app demonstrates:
+
+* Use of ``Accept`` headers to change the serialization from JSON to XML via
+  the :class:`invenio_rest.views.ContentNegotiatedMethodView`.
+* CORS headers (``Access-Control-Allow-Origin`` and
+  ``Access-Control-Expose-Headers``).
+* Rate limiting (the example app allows 5 requests per minute) and associated
+  headers ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``,
+  ``X-RateLimit-Reset``, ``Retry-After``,
+
+To reset the example application run:
 
 .. code-block:: console
 
@@ -75,7 +87,7 @@ def xml_v1_search(search_result):
 
 
 class RecordsListResource(ContentNegotiatedMethodView):
-    """Example Record List."""
+    """Example REST resource."""
 
     def __init__(self, **kwargs):
         """Init."""
@@ -98,6 +110,10 @@ class RecordsListResource(ContentNegotiatedMethodView):
 
 # Create Flask application
 app = Flask(__name__)
+app.config.update({
+    'REST_ENABLE_CORS': True,
+    'RATELIMIT_GLOBAL': '5/minutes',
+})
 
 InvenioREST(app)
 
