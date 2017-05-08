@@ -72,8 +72,8 @@ CORS_EXPOSE_HEADERS = [
 REST_ENABLE_CORS = False
 """Enable CORS configuration. (Default: ``False``)"""
 
-RATELIMIT_GLOBAL = '5000/hour'
-"""Global rate limit.
+RATELIMIT_DEFAULT = '5000/hour'
+"""Default rate limit.
 
 .. note:: Overwrite
    Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_
