@@ -87,3 +87,52 @@ RATELIMIT_HEADERS_ENABLED = True
    Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_
    configuration.
 """
+
+REST_ENABLE_SECURE_HEADERS = True
+"""Enable Secure Headers. (Default: ``True``)
+
+For development you can set ```REST_ENABLE_SECURE_HEADERS = False ```
+
+.. note::
+    `W3C
+    <https://www.w3.org/TR/CSP2/>`_
+"""
+
+REST_DEFAULT_SECURE_HEADERS = {
+    'force_https': False,
+    'force_https_permanent': False,
+    'force_file_save': False,
+    'frame_options': 'sameorigin',
+    'frame_options_allow_from': None,
+    'strict_transport_security': True,
+    'strict_transport_security_preload': False,
+    'strict_transport_security_max_age': 31556926,  # One year in seconds
+    'strict_transport_security_include_subdomains': True,
+    'content_security_policy': {
+        'default-src': '\'self\'',
+    },
+    'content_security_policy_report_uri': None,
+    'content_security_policy_report_only': False,
+    'session_cookie_secure': True,
+    'session_cookie_http_only': True
+}
+"""Default Secure Headers.
+
+.. note:: Overwrite
+    `Flask-Talisman
+    <https://github.com/GoogleCloudPlatform/flask-talisman>`_
+
+.. code-block:: python
+
+    from flask import Flask
+    from flask_talisman import Talisman
+
+    app = Flask(__name__)
+    talisman = Talisman(app)
+
+    @app.route('/defenders')
+    @talisman(frame_options_allow_from='*')
+    def defenders():
+        \"\"\"Override policies for the specific view.\"\"\"
+        return 'Jessica Jones'
+"""
