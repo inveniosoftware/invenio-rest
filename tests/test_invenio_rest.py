@@ -175,6 +175,44 @@ def test_ratelimt(app):
         assert res.headers['X-RateLimit-Reset']
 
 
+def test_secure_headers(app):
+    """Test Secure Headers support."""
+    app.config['REST_ENABLE_SECURE_HEADERS'] = True
+
+    InvenioREST(app)
+
+    @app.route('/')
+    def avangers():
+        return 'infinity war'
+
+    with app.test_client() as client:
+        res = client.get('/')
+        assert res.status_code == 200
+        assert res.headers['X-Content-Security-Policy']
+        assert res.headers['X-Content-Type-Options']
+        assert res.headers['X-Frame-Options']
+        assert res.headers['X-XSS-Protection']
+
+
+def test_secure_headers_disabled(app):
+    """Test Secure Headers support."""
+    app.config['REST_ENABLE_SECURE_HEADERS'] = False
+
+    InvenioREST(app)
+
+    @app.route('/')
+    def avangers():
+        return 'infinity war'
+
+    with app.test_client() as client:
+        res = client.get('/')
+        assert res.status_code == 200
+        assert not res.headers.get('X-Content-Security-Policy', False)
+        assert not res.headers.get('X-Content-Type-Options', False)
+        assert not res.headers.get('X-Frame-Options', False)
+        assert not res.headers.get('X-XSS-Protection', False)
+
+
 def _obj_to_json_serializer(data, code=200, headers=None):
     if data:
         res = jsonify(data)

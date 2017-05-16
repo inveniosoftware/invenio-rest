@@ -50,6 +50,9 @@ extras_require = {
     'cors': [
         'Flask-CORS>=2.1.0',
     ],
+    'secureheaders': [
+        'Flask-Talisman>=0.3.2',
+    ],
     'docs': [
         'Sphinx>=1.4.2',
     ],

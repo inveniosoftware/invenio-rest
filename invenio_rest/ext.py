@@ -66,6 +66,17 @@ class InvenioREST(object):
                 raise RuntimeError(
                     'You must use `pip install invenio-rest[cors]` to '
                     'enable CORS support.')
+        # Enable secure HTTP headers
+        if app.config['REST_ENABLE_SECURE_HEADERS']:
+            try:
+                pkg_resources.get_distribution('Flask-Talisman')
+                from flask_talisman import Talisman
+                Talisman(app, **app.config.get('REST_DEFAULT_SECURE_HEADERS',
+                                               {}))
+            except pkg_resources.DistributionNotFound:
+                raise RuntimeError(
+                    'You must use `pip install invenio-rest[secureheaders]` to'
+                    ' enable Secure Headers support.')
 
         self.limiter = Limiter(app, key_func=get_ipaddr)
 

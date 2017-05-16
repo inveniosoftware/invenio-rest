@@ -58,7 +58,8 @@ The example app demonstrates:
   ``Access-Control-Expose-Headers``).
 * Rate limiting (the example app allows 5 requests per minute) and associated
   headers ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``,
-  ``X-RateLimit-Reset``, ``Retry-After``,
+  ``X-RateLimit-Reset``, ``Retry-After``.
+* Secure HTTP response headers.
 
 To reset the example application run:
 
