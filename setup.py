@@ -66,7 +66,6 @@ setup_requires = [
 
 install_requires = [
     'Flask>=0.11.1',
-    'Flask-Limiter>=0.9.4',
 ]
 
 packages = find_packages()

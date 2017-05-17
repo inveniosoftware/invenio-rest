@@ -25,7 +25,6 @@
 """Invenio REST configuration.
 
 Please also see
-`Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_ and
 `Flask-CORS <https://flask-cors.readthedocs.io/en/latest/>`__ for many more
 configuration options.
 """
@@ -71,19 +70,3 @@ CORS_EXPOSE_HEADERS = [
 
 REST_ENABLE_CORS = False
 """Enable CORS configuration. (Default: ``False``)"""
-
-RATELIMIT_DEFAULT = '5000/hour'
-"""Default rate limit.
-
-.. note:: Overwrite
-   Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_
-   configuration.
-"""
-
-RATELIMIT_HEADERS_ENABLED = True
-"""Enable rate limit headers. (Default: ``True``)
-
-.. note:: Overwrite
-   Flask-Limiter <https://flask-limiter.readthedocs.io/en/stable/>`_
-   configuration.
-"""
