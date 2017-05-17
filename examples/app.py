@@ -56,9 +56,6 @@ The example app demonstrates:
   the :class:`invenio_rest.views.ContentNegotiatedMethodView`.
 * CORS headers (``Access-Control-Allow-Origin`` and
   ``Access-Control-Expose-Headers``).
-* Rate limiting (the example app allows 5 requests per minute) and associated
-  headers ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``,
-  ``X-RateLimit-Reset``, ``Retry-After``,
 
 To reset the example application run:
 
@@ -112,7 +109,6 @@ class RecordsListResource(ContentNegotiatedMethodView):
 app = Flask(__name__)
 app.config.update({
     'REST_ENABLE_CORS': True,
-    'RATELIMIT_GLOBAL': '5/minutes',
 })
 
 InvenioREST(app)

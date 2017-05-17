@@ -137,44 +137,6 @@ def test_cors(app):
             == len(app.config['CORS_EXPOSE_HEADERS'])
 
 
-def test_ratelimt(app):
-    """Test CORS support."""
-    app.config['RATELIMIT_GLOBAL'] = '1/day'
-    app.config['RATELIMIT_STORAGE_URL'] = 'memory://'
-    ext = InvenioREST(app)
-
-    for handler in app.logger.handlers:
-        ext.limiter.logger.addHandler(handler)
-
-    @app.route('/a')
-    def view_a():
-        return 'a'
-
-    @app.route('/b')
-    def view_b():
-        return 'b'
-
-    with app.test_client() as client:
-        res = client.get('/a')
-        assert res.status_code == 200
-        assert res.headers['X-RateLimit-Limit'] == '1'
-        assert res.headers['X-RateLimit-Remaining'] == '0'
-        assert res.headers['X-RateLimit-Reset']
-
-        res = client.get('/a')
-        assert res.status_code == 429
-        assert res.headers['X-RateLimit-Limit']
-        assert res.headers['X-RateLimit-Remaining']
-        assert res.headers['X-RateLimit-Reset']
-
-        # Global limit is per view.
-        res = client.get('/b')
-        assert res.status_code == 200
-        assert res.headers['X-RateLimit-Limit']
-        assert res.headers['X-RateLimit-Remaining']
-        assert res.headers['X-RateLimit-Reset']
-
-
 def _obj_to_json_serializer(data, code=200, headers=None):
     if data:
         res = jsonify(data)

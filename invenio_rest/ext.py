@@ -27,8 +27,6 @@
 from __future__ import absolute_import, print_function
 
 import pkg_resources
-from flask_limiter import Limiter
-from flask_limiter.util import get_ipaddr
 
 from . import config
 from .views import create_api_errorhandler
@@ -42,7 +40,6 @@ class InvenioREST(object):
 
         :param app: An instance of :class:`flask.Flask`.
         """
-        self.limiter = None
         if app:
             self.init_app(app)
 
@@ -66,8 +63,6 @@ class InvenioREST(object):
                 raise RuntimeError(
                     'You must use `pip install invenio-rest[cors]` to '
                     'enable CORS support.')
-
-        self.limiter = Limiter(app, key_func=get_ipaddr)
 
         app.errorhandler(400)(create_api_errorhandler(
             status=400, message='Bad Request'))
@@ -113,7 +108,7 @@ class InvenioREST(object):
 
         :param app: An instance of :class:`flask.Flask`.
         """
-        config_apps = ['REST_', 'CORS_', 'RATELIMIT_']
+        config_apps = ['REST_', 'CORS_', ]
         for k in dir(config):
             if any([k.startswith(prefix) for prefix in config_apps]):
                 app.config.setdefault(k, getattr(config, k))
