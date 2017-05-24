@@ -1,8 +1,8 @@
 ========================
- Invenio-REST v1.0.0a10
+ Invenio-REST v1.0.0a11
 ========================
 
-Invenio-REST v1.0.0a10 was released on October 7, 2016.
+Invenio-REST v1.0.0a11 was released on May 24, 2017.
 
 About
 -----
@@ -17,7 +17,7 @@ What's new
 Installation
 ------------
 
-   $ pip install invenio-rest==1.0.0a10
+   $ pip install invenio-rest==1.0.0a11
 
 Documentation
 -------------
