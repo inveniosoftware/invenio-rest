@@ -45,7 +45,7 @@ CORS_RESOURCES = '*'
 CORS_SEND_WILDCARD = True
 """Sending wildcard CORS header.
 
-.. note:: Overwrite
+.. note:: Overwrites
    `Flask-CORS
    <https://flask-cors.readthedocs.io/en/latest/api.html#flask_cors.CORS>`_
    configuration.
@@ -61,7 +61,7 @@ CORS_EXPOSE_HEADERS = [
 ]
 """Expose the following headers.
 
-.. note:: Overwrite
+.. note:: Overwrites
    `Flask-CORS
    <https://flask-cors.readthedocs.io/en/latest/api.html#flask_cors.CORS>`_
    configuration.

@@ -43,8 +43,8 @@
 REST API module for Invenio.
 
 Invenio-REST takes care of installing basic error handling on a Flask API
-application, as well as initializing Flask-Limiter for rate limiting and
-Flask-CORS for Cross-Origin Resources Sharing (not enabled by default).
+application, as well as initializing Flask-CORS for Cross-Origin Resources
+Sharing (not enabled by default).
 
 Further documentation is available on
 https://invenio-rest.readthedocs.io/
