@@ -26,5 +26,3 @@ Usage
 =====
 
 .. automodule:: invenio_rest
-
-For more information, please refer to the :ref:`api` documentation.

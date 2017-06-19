@@ -95,6 +95,82 @@ To finish, we need to create a blueprint that defines an endpoint (here
 
 Now you can launch your server and request it on the `/records` endpoint, as
 described in :any:`examplesapp`.
+
+Building REST APIs for Invenio
+------------------------------
+Following is a quick overview over which tools we are currently using for
+building REST APIs. Before implementing your REST API, do take a look at some
+of the existing REST APIs already implemented in Invenio to get some
+inspiration.
+
+In Invenio we have decided not to use some of the existing Flask extensions for
+building REST APIs since mostly these extensions are not very flexible and
+there are many existing Python libraries that do a much better job at the
+individual tasks.
+
+Flask application
+~~~~~~~~~~~~~~~~~
+Invenio's REST API is running in its own Flask application. This ensures that
+the REST API can run on machines independently of the UI application and also
+ensures that e.g. error handling, that it can be independently versioned, is
+much simpler compared to having a mixed REST API/UI application.
+
+Views
+~~~~~
+Views for REST APIs are built using standard Flask blueprints. We use
+:class:`~flask.views.MethodView` for HTTP method based dispatching, and in
+particular we use Invenio-REST's subclass
+:class:`~.views.ContentNegotiatedMethodView` which takes care of selecting the
+right serializer based on HTTP content negotiation.
+
+Versioning
+~~~~~~~~~~
+Versioning of the REST API is primarily achieved through HTTP content
+negotiation. I.e. you define a new MIME type that your clients explicitly
+request (using :class:`~.views.ContentNegotiatedMethodView`).
+
+Serialization/Deserialization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For serialization/deserialization we primarily use
+`Marshmallow <http://marshmallow.readthedocs.io/>`_ which takes care
+that REST API endpoints are supplied with proper argument types such as list of
+strings or integers, or ensuring that e.g. timestamps are ISO8601 formatted in
+UTC when serializing to JSON, and correctly deserialize timestamps into Python
+datetime objects.
+
+`Invenio-Records-REST <http://invenio-records-rest.readthedocs.io/>`_
+is currently the most advanced example of using serializers with both JSON, XML
+and text output.
+
+Request parameters parsing
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Request parameters in the URL or JSON are most often handled with the library
+`webargs <https://webargs.readthedocs.io/>`_.
+
+Error handling
+~~~~~~~~~~~~~~
+Invenio-REST provides some default exceptions which you can subclass, which
+when thrown, will render a proper REST API response for the error to the
+client (see e.g. :class:`~invenio_rest.errors.RESTException`).
+
+Headers (security, CORS and rate limiting)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`Invenio-App <https://invenio-app.readthedocs.io/>`_ is responsible
+for installing
+`Flask-Tailsman <https://github.com/GoogleCloudPlatform/flask-talisman>`_ which
+sets many important security related headers as well as
+`Flask-Limiter <https://flask-limiter.readthedocs.io/>`_ which
+provides rate limiting.
+
+Invenio-REST is responsible for installing
+`Flask-CORS <https://flask-cors.readthedocs.io/>`_ which provides
+support for Cross-Origin Resource Sharing.
+
+`Invenio-OAuth2Server
+<https://invenio-oauth2server.readthedocs.io/en/latest/>`_ along with
+`Invenio-Accounts <https://invenio-accounts.readthedocs.io/en/latest/>`_ is
+responsible for providing API authentication based on OAuth 2.0 as well as
+protecting against CRSF-attacks in the REST API.
 """
 
 from __future__ import absolute_import, print_function
