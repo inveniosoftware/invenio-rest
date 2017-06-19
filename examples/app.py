@@ -67,7 +67,6 @@ To reset the example application run:
 from __future__ import absolute_import, print_function
 
 import dicttoxml
-
 from flask import Blueprint, Flask, jsonify, make_response
 
 from invenio_rest import ContentNegotiatedMethodView, InvenioREST

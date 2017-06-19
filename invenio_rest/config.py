@@ -31,7 +31,6 @@ configuration options.
 
 from __future__ import unicode_literals
 
-
 CORS_RESOURCES = '*'
 """Dictionary for configuring CORS for endpoints.
 
