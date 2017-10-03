@@ -69,3 +69,25 @@ CORS_EXPOSE_HEADERS = [
 
 REST_ENABLE_CORS = False
 """Enable CORS configuration. (Default: ``False``)"""
+
+REST_MIMETYPE_QUERY_ARG_NAME = None
+"""Name of the query argument to specify the mimetype wanted for the output.
+   Set it to None to disable.
+
+.. note::
+   You can customize the query argument name by specifying it as a string::
+
+        REST_MIMETYPE_QUERY_ARG_NAME = 'format'
+
+   With this value, the url will be::
+
+        /api/record/<id>?format=<value>
+
+   You can set the accepted values passing a dictionary to the key
+   `record_serializers_aliases`::
+
+       record_serializers_aliases={
+          'json': 'application/json',
+          'marc21': 'application/marcxml+xml'
+       }
+"""

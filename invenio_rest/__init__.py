@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2015, 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -27,6 +27,9 @@
 Invenio-REST takes care of installing basic error handling on a Flask API
 application, as well as initializing Flask-Limiter for rate limiting and
 Flask-CORS for Cross-Origin Resources Sharing (not enabled by default).
+It also acts as orchestrator to take actions depending on the request headers,
+such as dealing with ETag/If-Modified-Since cache header or Content-Type/Accept
+header to resolve the right content serializer.
 
 Initialization
 --------------
@@ -55,8 +58,9 @@ For instance, our server will be able to either answer in JSON or in XML:
 
 Views
 -----
-Now we create our view that will handle the requests and return the answer. To
-do so, we need to create a class that inherit
+Now we create our view that will handle the requests and return the serialized
+response based on the request's headers or using the default media type.
+To do so, we need to create a class that inherits
 :class:`~.views.ContentNegotiatedMethodView`. In the constructor, we register
 our two serializers, and we create a `get` method for the `GET` requests:
 
@@ -131,6 +135,35 @@ request (using :class:`~.views.ContentNegotiatedMethodView`).
 
 Serialization/Deserialization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Invenio-REST provides 2 ways to define how to serialize the response content:
+
+    - `Query argument`: if the request query contains a well configured
+      parameter, for example `format` (see the config
+      `REST_MIMETYPE_QUERY_ARG_NAME`), then the serializer associated to the
+      value of that argument will be used. With a request like::
+
+          /api/record/<id>?format=custom_json
+
+      and a defined mapping like::
+
+          record_serializers_aliases={
+              'custom_json': 'application/json',
+              'marc21': 'application/marcxml+xml'
+          }
+
+      the output will be serialized using the serializer that is associated
+      to the mimetype `application/json`.
+
+    - `Headers`: if the query argument is missing or disabled, then the headers
+      `Accept` or `Content-Type` are parsed to resolve the serializer to use.
+      The expected value for the header is the mimetype::
+
+          Accept: application/json
+
+      again, the serializer associated to that mimetype will be used to format
+      the output.
+
+
 For serialization/deserialization we primarily use
 `Marshmallow <http://marshmallow.readthedocs.io/>`_ which takes care
 that REST API endpoints are supplied with proper argument types such as list of
