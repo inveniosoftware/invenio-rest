@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2015, 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -35,6 +35,7 @@ import pytest
 from flask import Flask, abort, make_response, request
 from flask.json import jsonify
 from mock import patch
+from six.moves.urllib.parse import urlencode
 from werkzeug.http import quote_etag, unquote_etag
 
 from invenio_rest import ContentNegotiatedMethodView, InvenioREST
@@ -410,8 +411,8 @@ def test_get_method_serializers(app):
         v.method_serializers['DELETE']
 
 
-def test_match_serializers(app):
-    """Test match serializers."""
+def test_match_serializers_headers(app):
+    """Test match serializers headers."""
     v = ContentNegotiatedMethodView(
         method_serializers=dict(
             DELETE={
@@ -485,10 +486,67 @@ def test_match_serializers(app):
 
     for accept, method, expected_serializer in tests:
         params = dict(headers=[('Accept', accept)]) if accept else {}
-        with app.test_request_context(**params):
-            assert v.match_serializers(*v.get_method_serializers(method)) == \
-                expected_serializer, "Accept: {0}, Method: {1}".format(
-                    accept, method)
+        _test_march_serializers(app, v, params, method, accept,
+                                expected_serializer)
+
+
+def test_match_serializers_query_arg(app):
+    """Test match serializers query argument."""
+    v = ContentNegotiatedMethodView(
+        method_serializers=dict(
+            GET={
+                'application/json': 'json-get',
+                'application/marcxml+xml': 'xml-get'}
+        ),
+        serializers_query_aliases={
+            'json': 'application/json',
+            'marcxml': 'application/marcxml+xml',
+        },
+        default_media_type='application/marcxml+xml',
+        default_method_media_type=dict(
+            GET='application/marcxml+xml',
+        )
+    )
+
+    # enable serialization by query arg
+    app.config['REST_MIMETYPE_QUERY_ARG_NAME'] = 'format'
+    InvenioREST(app)
+
+    arg_name = app.config['REST_MIMETYPE_QUERY_ARG_NAME']
+    tests = [
+        # Should serialize to marcxml
+        (urlencode({arg_name: 'marcxml'}), 'application/json', 'xml-get'),
+        # Should serialize to json
+        (urlencode({arg_name: 'json'}), 'application/marcxml+xml',
+         'json-get'),
+        # Should serialize to json
+        (urlencode({}), 'application/json', 'json-get'),
+        # Should serialize to default (marcxml)
+        (urlencode({'wrong_name': 'marcxml'}), None, 'xml-get'),
+    ]
+
+    for arg, accept, expected_serializer in tests:
+        params = dict(headers=[('Accept', accept)],
+                      query_string=arg) if accept else {}
+        _test_march_serializers(app, v, params, 'GET', accept,
+                                expected_serializer)
+
+    # disable query arg, should serialize by headers even if query arg passed
+    app.config['REST_MIMETYPE_QUERY_ARG_NAME'] = None
+    InvenioREST(app)
+
+    accept = 'application/json'
+    params = dict(headers=[('Accept', accept)], query_string='format=marcxml')
+    _test_march_serializers(app, v, params, 'GET', accept, 'json-get')
+
+
+def _test_march_serializers(app, view_method, request_params, request_method,
+                            request_accept_header, expected_serializer):
+    with app.test_request_context(**request_params):
+        assert view_method.match_serializers(
+            *view_method.get_method_serializers(request_method)) == \
+               expected_serializer, "Accept: {0}, Method: {1}".format(
+            request_accept_header, request_method)
 
 
 def _subtest_content_negotiation_method_view(app, content_negotiated_class,

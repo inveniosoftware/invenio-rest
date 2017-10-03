@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2015, 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import, print_function
 
-from flask import Response, abort, jsonify, make_response, request
+from flask import Response, abort, current_app, jsonify, make_response, request
 from flask.views import MethodView
 from werkzeug.exceptions import HTTPException
 
@@ -59,27 +59,30 @@ class ContentNegotiatedMethodView(MethodView):
     """MethodView with content negotiation.
 
     Dispatch HTTP requests as MethodView does and build responses using the
-    registered serializers. It choses the right serializer using the request's
+    registered serializers. It chooses the right serializer using the request's
     accept type. It also provides a helper method for handling ETags.
     """
 
     def __init__(self, serializers=None, method_serializers=None,
-                 default_media_type=None, default_method_media_type=None,
-                 *args, **kwargs):
+                 serializers_query_aliases=None, default_media_type=None,
+                 default_method_media_type=None, *args, **kwargs):
         """Register the serializing functions.
 
         Serializing functions will receive all named and non named arguments
         provided to ``make_response`` or returned by request handling methods.
-        Recommened prototype is: ``serializer(data, code=200, headers=None)``
+        Recommended prototype is: ``serializer(data, code=200, headers=None)``
         and it should return :class:`flask.Response` instances.
 
-        Serializing functions can also be overriden by setting
+        Serializing functions can also be overridden by setting
         ``self.serializers``.
 
         :param serializers: A mapping from mediatype to a serializer function.
         :param method_serializers: A mapping of HTTP method name (GET, PUT,
             PATCH, POST, DELETE) -> dict(mediatype -> serializer function). If
             set, it overrides the serializers dict.
+        :param serializers_query_aliases: A mapping of values of the defined
+            query arg (see `config.REST_MIMETYPE_QUERY_ARG_NAME`) to valid
+            mimetypes: dict(alias -> mimetype).
         :param default_media_type: Default media type used if no accept type
             has been provided and global serializers are used for the request.
             Can be None if there is only one global serializer or None. This
@@ -106,7 +109,9 @@ class ContentNegotiatedMethodView(MethodView):
         self.method_serializers = ({key.upper(): func for key, func in
                                     method_serializers.items()} if
                                    method_serializers else {})
-        # create default default method media_types dict if none has been given
+        # set serializer aliases
+        self.serializers_query_aliases = serializers_query_aliases or {}
+        # create default method media_types dict if none has been given
         if self.method_serializers and not self.default_method_media_type:
             self.default_method_media_type = {}
             for http_method, meth_serial in self.method_serializers.items():
@@ -145,13 +150,27 @@ class ContentNegotiatedMethodView(MethodView):
                 http_method, self.default_media_type)
         )
 
-    def match_serializers(self, serializers, default_media_type):
-        """Choose serializer for a given request based on accept headers.
+    def _match_serializers_by_query_arg(self, serializers):
+        """Match serializer by query arg."""
+        # if the format query argument is present, match the serializer
+        arg_name = current_app.config.get('REST_MIMETYPE_QUERY_ARG_NAME')
+        if arg_name:
+            arg_value = request.args.get(arg_name, None)
 
-        :param serializers: Dictionary of serializers.
-        :param default_media_type: The default media type.
-        :returns: Best matching serializer based on client accept headers.
-        """
+            if arg_value is None:
+                return None
+            # Search for the serializer matching the format
+            try:
+                return serializers[
+                    self.serializers_query_aliases[arg_value]]
+            except KeyError:  # either no serializer for this format
+                return None
+
+        return None
+
+    def _match_serializers_by_accept_headers(self, serializers,
+                                             default_media_type):
+        """Match serializer by `Accept` headers."""
         # Bail out fast if no accept headers were given.
         if len(request.accept_mimetypes) == 0:
             return serializers[default_media_type]
@@ -165,18 +184,37 @@ class ContentNegotiatedMethodView(MethodView):
                 continue
             if client_accept == '*/*':
                 has_wildcard = True
-            for s in serializers.keys():
+            for s in serializers:
                 if s in ['*/*', client_accept] and quality > 0:
                     best_quality = quality
                     best = s
 
-        # If no match found, but wildcard exists the use default media type.
+        # If no match found, but wildcard exists, them use default media
+        # type.
         if best is None and has_wildcard:
             best = default_media_type
 
         if best is not None:
             return serializers[best]
         return None
+
+    def match_serializers(self, serializers, default_media_type):
+        """Choose serializer for a given request based on query arg or headers.
+
+        Checks if query arg `format` (by default) is present and tries to match
+        the serializer based on the arg value, by resolving the mimetype mapped
+        to the arg value.
+        Otherwise, chooses the serializer by retrieving the best quality
+        `Accept` headers and matching its value (mimetype).
+
+        :param serializers: Dictionary of serializers.
+        :param default_media_type: The default media type.
+        :returns: Best matching serializer based on `format` query arg first,
+            then client `Accept` headers or None if no matching serializer.
+        """
+        return self._match_serializers_by_query_arg(serializers) or self.\
+            _match_serializers_by_accept_headers(serializers,
+                                                 default_media_type)
 
     def make_response(self, *args, **kwargs):
         """Create a Flask Response.
