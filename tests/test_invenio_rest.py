@@ -82,6 +82,11 @@ def test_error_handlers(app):
             for verb in verbs:
                 res = verb("/{0}".format(s))
                 assert res.status_code == s
+                if pkg_resources.get_distribution("werkzeug").\
+                        version == '0.14.1' and s == 412:
+                    # skip test because of the following issue:
+                    # https://github.com/pallets/werkzeug/issues/1231
+                    continue
                 if verb != client.head:
                     data = json.loads(res.get_data(as_text=True))
                     assert data['status'] == s
