@@ -26,7 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
-from flask import Response, abort, current_app, jsonify, make_response, request
+from flask import Response, abort, current_app, g, jsonify, make_response, \
+    request
 from flask.views import MethodView
 from werkzeug.exceptions import HTTPException
 
@@ -51,6 +52,8 @@ def create_api_errorhandler(**kwargs):
             return e.get_response()
         elif isinstance(e, HTTPException) and e.description:
             kwargs['message'] = e.description
+        if kwargs.get('status', 400) >= 500 and hasattr(g, 'sentry_event_id'):
+            kwargs['error_id'] = str(g.sentry_event_id)
         return make_response(jsonify(kwargs), kwargs['status'])
     return api_errorhandler
 

@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 
 import json
 
+from flask import g
 from werkzeug.exceptions import HTTPException
 from werkzeug.http import http_date
 
@@ -90,6 +91,9 @@ class RESTException(HTTPException):
         errors = self.get_errors()
         if self.errors:
             body['errors'] = errors
+
+        if self.code and (self.code >= 500) and hasattr(g, 'sentry_event_id'):
+            body['error_id'] = str(g.sentry_event_id)
 
         return json.dumps(body)
 
