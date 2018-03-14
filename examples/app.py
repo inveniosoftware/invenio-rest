@@ -70,7 +70,7 @@ SPHINX-END
 
 from __future__ import absolute_import, print_function
 
-import dicttoxml
+import xmltodict
 from flask import Blueprint, Flask, jsonify, make_response
 
 from invenio_rest import ContentNegotiatedMethodView, InvenioREST
@@ -83,7 +83,7 @@ def json_v1_search(search_result):
 
 def xml_v1_search(search_result):
     """Serialize records as text."""
-    return make_response(dicttoxml.dicttoxml((search_result,)))
+    return make_response(xmltodict.unparse(search_result))
 
 
 class RecordsListResource(ContentNegotiatedMethodView):

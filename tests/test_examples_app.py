@@ -76,7 +76,6 @@ def test_example_app(example_app):
     cmd = ('curl http://0.0.0.0:5000/records/?q=title:Test '
            '-H Accept:application/xml')
     output = subprocess.check_output(cmd, shell=True).decode('utf-8')
-    expected = ("""<?xml version="1.0" encoding="UTF-8" ?><root>"""
-                """<item type="dict"><title type="str">Test</title>"""
-                """</item></root>""")
+    expected = ("""<?xml version="1.0" encoding="utf-8"?>\n"""
+                """<title>Test</title>""")
     assert output == expected
