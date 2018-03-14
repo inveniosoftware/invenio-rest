@@ -49,12 +49,12 @@ Serializers
 Let's create 2 serializers that will return our answer to the correct format.
 For instance, our server will be able to either answer in JSON or in XML:
 
-    >>> import dicttoxml
+    >>> import xmltodict
     >>> from flask import jsonify, make_response
     >>> def json_v1_search(search_result):
     ...     return make_response(jsonify(search_result))
     >>> def xml_v1_search(search_result):
-    ...     return make_response(dicttoxml.dicttoxml((search_result,)))
+    ...     return make_response(xmltodict.unparse((search_result,)))
 
 Views
 -----
