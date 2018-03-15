@@ -113,15 +113,6 @@ def test_custom_httpexception(app):
         assert data['status'] == 400
 
 
-def test_cors_loading(app):
-    """Test CORS support."""
-    app.config['REST_ENABLE_CORS'] = True
-
-    with patch('flask_cors.CORS') as CORS:
-        CORS.side_effect = pkg_resources.DistributionNotFound
-        pytest.raises(RuntimeError, InvenioREST, app)
-
-
 def test_cors(app):
     """Test CORS support."""
     app.config['REST_ENABLE_CORS'] = True
