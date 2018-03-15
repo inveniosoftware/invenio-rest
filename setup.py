@@ -47,9 +47,6 @@ tests_require = [
 ]
 
 extras_require = {
-    'cors': [
-        'Flask-CORS>=2.1.0',
-    ],
     'docs': [
         'Sphinx>=1.4.2',
     ],
@@ -66,6 +63,7 @@ setup_requires = [
 
 install_requires = [
     'Flask>=0.11.1',
+    'Flask-CORS>=2.1.0'
 ]
 
 packages = find_packages()

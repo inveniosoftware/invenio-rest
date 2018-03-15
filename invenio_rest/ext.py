@@ -54,15 +54,9 @@ class InvenioREST(object):
 
         # Enable CORS support if desired
         if app.config['REST_ENABLE_CORS']:
-            try:
-                pkg_resources.get_distribution('Flask-CORS')
-                from flask_cors import CORS
-                CORS(app)
-                # CORS can be configured using CORS_* configuration variables.
-            except pkg_resources.DistributionNotFound:
-                raise RuntimeError(
-                    'You must use `pip install invenio-rest[cors]` to '
-                    'enable CORS support.')
+            from flask_cors import CORS
+            CORS(app)
+            # CORS can be configured using CORS_* configuration variables.
 
         app.errorhandler(400)(create_api_errorhandler(
             status=400, message='Bad Request'))
