@@ -47,6 +47,8 @@ tests_require = [
 ]
 
 extras_require = {
+    # `cors` moved to `install_requires`, but kept for backward compatibility
+    'cors': [],
     'docs': [
         'Sphinx>=1.4.2',
     ],
