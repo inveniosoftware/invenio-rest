@@ -5,11 +5,22 @@
     Invenio is free software; you can redistribute it and/or modify it
     under the terms of the MIT License; see LICENSE file for more details.
 
-Authors
-=======
+Contributors
+============
 
-REST API module for Invenio.
-
-- Jiri Kuncar <jiri.kuncar@cern.ch>
-- Lars Holm Nielsen <lars.holm.nielsen@cern.ch>
-- Rémi Ducceschi <remi.ducceschi@gmail.com>
+- Alexander Ioannidis
+- Alizee Pace
+- Chiara Bigarella
+- Harri Hirvonsalo
+- Harris Tzovanakis
+- Jacopo Notarstefano
+- Jiri Kuncar
+- Lars Holm Nielsen
+- Leonardo Rossi
+- Nicola Tarocco
+- Nicolas Harraudeau
+- Nikos Filippakis
+- Rémi Ducceschi
+- Sami Hiltunen
+- Sebastian Witowski
+- Tibor Simko
