@@ -1,3 +1,10 @@
+..
+    This file is part of Invenio.
+    Copyright (C) 2015-2018 CERN.
+
+    Invenio is free software; you can redistribute it and/or modify it
+    under the terms of the MIT License; see LICENSE file for more details.
+
 ==============
  Invenio-REST
 ==============
@@ -8,14 +15,8 @@
 .. image:: https://img.shields.io/coveralls/inveniosoftware/invenio-rest.svg
         :target: https://coveralls.io/r/inveniosoftware/invenio-rest
 
-.. image:: https://img.shields.io/github/tag/inveniosoftware/invenio-rest.svg
-        :target: https://github.com/inveniosoftware/invenio-rest/releases
-
-.. image:: https://img.shields.io/pypi/dm/invenio-rest.svg
-        :target: https://pypi.python.org/pypi/invenio-rest
-
-.. image:: https://img.shields.io/github/license/inveniosoftware/invenio-rest.svg
-        :target: https://github.com/inveniosoftware/invenio-rest/blob/master/LICENSE
+.. image:: https://img.shields.io/pypi/v/invenio-rest.svg
+        :target: https://pypi.org/pypi/invenio-rest
 
 REST API module for Invenio.
 
