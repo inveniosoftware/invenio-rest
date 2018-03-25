@@ -9,6 +9,9 @@
  Invenio-REST
 ==============
 
+.. image:: https://img.shields.io/github/license/inveniosoftware/invenio-rest.svg
+        :target: https://github.com/inveniosoftware/invenio-rest/blob/master/LICENSE
+
 .. image:: https://img.shields.io/travis/inveniosoftware/invenio-rest.svg
         :target: https://travis-ci.org/inveniosoftware/invenio-rest
 
