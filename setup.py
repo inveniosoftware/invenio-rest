@@ -36,6 +36,14 @@ extras_require = {
         'Sphinx>=1.4.2',
     ],
     'tests': tests_require,
+    ':python_version<"3.0.0"': [
+        'marshmallow>=2.15.1,<3.0.0',
+        'webargs>=1.1.1',
+    ],
+    ':python_version>="3.0.0"': [
+        'marshmallow>=2.15.1',
+        'webargs>=1.1.1',
+    ],
 }
 
 extras_require['all'] = []
