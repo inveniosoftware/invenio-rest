@@ -10,49 +10,75 @@
 
 import warnings
 
-from marshmallow import Schema, fields, missing
+from marshmallow import Schema
 
 
-class MarshalResultBase(object):
-    """Wrapper class to provide backward compatibility with marshmallow 2."""
-
-    def __new__(cls, result, errors=None, *args, **kwargs):
-        """Instanciate Marshal Result class."""
-        def data(self):
-            warnings.warn(
-                "Schema().dump().data and Schema().dump().errors attributes "
-                "are deprecated in marshmallow v3.x. Use .dump() "
-                "and error handler instead.",
-                category=PendingDeprecationWarning, stacklevel=2)
-            return result
-
-        setattr(cls, 'data', property(data))
-        return super(MarshalResultBase, cls).__new__(
-            cls, result, errors, *args, **kwargs)
+class MarshmalDict(dict):
+    """Wrapping class for result of type dictionary."""
 
     def __init__(self, result):
-        """Initialize MarshalResult."""
-        super(MarshalResultBase, self).__init__(result)
+        """Initialize MarshmalDict."""
+        self.update(result)
+
+    @property
+    def data(self):
+        """Substituting data property for backwards compatibility."""
+        warnings.warn(
+            "Schema().dump().data and Schema().dump().errors "
+            "as well as Schema().load().data and Schema().loads().data"
+            "attributes are deprecated in marshmallow v3.x.",
+            category=PendingDeprecationWarning, stacklevel=2)
+        return self
 
 
-def dump_wrapper(result):
+class MarshmalList(list):
+    """Wrapping class for result of type list."""
+
+    def __init__(self, result):
+        """Initialize MarshmalList."""
+        self.extend(result)
+
+    @property
+    def data(self):
+        """Substituting data property for backwards compatibility."""
+        warnings.warn(
+            "Schema().dump().data and Schema().dump().errors "
+            "as well as Schema().load().data and Schema().loads().data"
+            "attributes are deprecated in marshmallow v3.x.",
+            category=PendingDeprecationWarning, stacklevel=2)
+        return self
+
+
+def result_wrapper(result):
     """Wrap schema returned dump value."""
     if isinstance(result, tuple):
         return result
-    MarshalResult = type('MarshalResult',
-                         (MarshalResultBase, type(result)), {})
-    return MarshalResult(result)
+    elif isinstance(result, dict):
+        return MarshmalDict(result)
+    elif isinstance(result, list):
+        return MarshmalList(result)
+    return result
 
 
 class BaseSchema(Schema):
     """Base schema for all serializations."""
 
-    def dump(self, obj, many=None, update_fields=True, **kwargs):
+    def dump(self, obj, *args, **kwargs):
         """Wrap dump result for backward compatibility."""
-        result = super(BaseSchema, self).dump(obj, many=many, **kwargs)
-        return dump_wrapper(result)
+        result = super(BaseSchema, self).dump(obj, **kwargs)
+        return result_wrapper(result)
 
-    def dumps(self, obj, many=None, update_fields=True, *args, **kwargs):
+    def dumps(self, obj, *args, **kwargs):
         """Wrap dumps result for backward compatibility."""
-        result = super(BaseSchema, self).dumps(obj, *args, many=many, **kwargs)
-        return dump_wrapper(result)
+        result = super(BaseSchema, self).dumps(obj, *args, **kwargs)
+        return result_wrapper(result)
+
+    def load(self, obj, *args, **kwargs):
+        """Wrap load result for backward compatibility."""
+        result = super(BaseSchema, self).load(obj, *args, **kwargs)
+        return result_wrapper(result)
+
+    def loads(self, obj, *args, **kwargs):
+        """Wrap loads result for backward compatibility."""
+        result = super(BaseSchema, self).loads(obj, *args, **kwargs)
+        return result_wrapper(result)

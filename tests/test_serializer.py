@@ -14,7 +14,7 @@ from collections import namedtuple
 
 from marshmallow import fields
 
-from invenio_rest.serializer import BaseSchema, dump_wrapper
+from invenio_rest.serializer import BaseSchema, result_wrapper
 
 
 def test_serialize_pretty(app):
@@ -33,16 +33,16 @@ def test_marshmallow_compatibility():
     old_marshal = namedtuple('MarshalResult', ['data', 'errors'])
     tuple_result = old_marshal({'test': 1}, [{'field': 5}])
 
-    wrapped = dump_wrapper(dict_result)
+    wrapped = result_wrapper(dict_result)
 
     assert wrapped == dict_result
     assert wrapped.data == dict_result
 
-    wrapped = dump_wrapper(list_result)
+    wrapped = result_wrapper(list_result)
     assert wrapped == list_result
     assert wrapped.data == list_result
 
-    wrapped = dump_wrapper(tuple_result)
+    wrapped = result_wrapper(tuple_result)
     assert wrapped == tuple_result
     assert isinstance(wrapped, tuple)
     assert tuple_result.data == dict_result
