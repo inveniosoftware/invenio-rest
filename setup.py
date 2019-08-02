@@ -37,12 +37,10 @@ extras_require = {
     ],
     'tests': tests_require,
     ':python_version<"3.0.0"': [
-        'marshmallow>=2.15.1,<3.0.0',
-        'webargs>=1.1.1',
+        'marshmallow>=2.15.2,<3.0.0',
     ],
     ':python_version>="3.0.0"': [
-        'marshmallow>=2.15.1',
-        'webargs>=1.1.1',
+        'marshmallow>=2.15.2',
     ],
 }
 
@@ -56,7 +54,8 @@ setup_requires = [
 
 install_requires = [
     'Flask>=0.11.1',
-    'Flask-CORS>=2.1.0'
+    'Flask-CORS>=2.1.0',
+    'webargs>=5.1.3',
 ]
 
 packages = find_packages()
