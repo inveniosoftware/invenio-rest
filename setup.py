@@ -55,7 +55,7 @@ setup_requires = [
 install_requires = [
     'Flask>=0.11.1',
     'Flask-CORS>=2.1.0',
-    'webargs>=5.1.3',
+    'webargs>=5.5.0',
 ]
 
 packages = find_packages()
