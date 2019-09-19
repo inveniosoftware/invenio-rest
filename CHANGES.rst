@@ -8,6 +8,10 @@
 Changes
 =======
 
+Version 1.1.2 (released 2019-09-19)
+
+- Bumps webargs to 5.5.0 (provides support for marshmallow 3)
+
 Version 1.1.1 (released 2019-08-02)
 
 - Bumps marshmallow to 2.15.2 (minimum required by webargs).
