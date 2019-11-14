@@ -143,4 +143,5 @@ class SameContentException(RESTException):
             response.set_etag(self.etag)
         if self.last_modified is not None:
             response.headers['Last-Modified'] = http_date(self.last_modified)
+        response.vary = 'Content-Type, Accept'
         return response

@@ -18,6 +18,11 @@ from werkzeug.exceptions import HTTPException
 from .errors import RESTException, SameContentException
 
 
+def create_etag(id, mimetype):
+    """Construct eta."""
+    return "{}-{}".format(id, mimetype)
+
+
 def create_api_errorhandler(**kwargs):
     r"""Create an API error handler.
 
@@ -203,6 +208,15 @@ class ContentNegotiatedMethodView(MethodView):
             _match_serializers_by_accept_headers(serializers,
                                                  default_media_type)
 
+    def find_method_serializer(self):
+        """Get serializer or abort with 406."""
+        serializer = self.match_serializers(
+            *self.get_method_serializers(request.method))
+        if not serializer:
+            abort(406)
+        return serializer
+
+
     def make_response(self, *args, **kwargs):
         """Create a Flask Response.
 
@@ -214,12 +228,9 @@ class ContentNegotiatedMethodView(MethodView):
         :raises werkzeug.exceptions.NotAcceptable: If no media type
             matches current Accept header.
         """
-        serializer = self.match_serializers(
-            *self.get_method_serializers(request.method))
+        serializer = kwargs.pop("serializer", self.find_method_serializer())
 
-        if serializer:
-            return serializer(*args, **kwargs)
-        abort(406)
+        return serializer(*args, **kwargs)
 
     def dispatch_request(self, *args, **kwargs):
         """Dispatch current request.
