@@ -10,6 +10,8 @@
 
 from __future__ import absolute_import, print_function
 
+import warnings
+
 import pkg_resources
 
 from . import config
@@ -43,9 +45,14 @@ class InvenioREST(object):
             # CORS can be configured using CORS_* configuration variables.
 
         # Enable CSRF support if desired
-        if app.config['REST_ENABLE_CSRF']:
+        if app.config['REST_CSRF_ENABLED']:
             from .csrf import csrf
             csrf.init_app(app)
+        else:
+            warnings.warn(
+                "CSRF validation will be enabled by default in the version"
+                " 1.3.x",
+                category=FutureWarning, stacklevel=2)
 
         app.errorhandler(400)(create_api_errorhandler(
             status=400, message='Bad Request'))
