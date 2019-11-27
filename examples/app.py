@@ -135,6 +135,7 @@ blueprint_exempt_csrf = Blueprint(
 )
 
 records_view = RecordsListResource.as_view('records')
+
 blueprint.add_url_rule('/', view_func=records_view)
 blueprint.add_url_rule(
     '/nocsrf', view_func=csrf.exempt(csrf_exempt_view), methods=['POST'])

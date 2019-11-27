@@ -76,13 +76,12 @@ REST_MIMETYPE_QUERY_ARG_NAME = None
        }
 """
 
-REST_ENABLE_CSRF = False
+REST_CSRF_ENABLED = False
 """Enable CSRF middleware. (Default: ``False``).
 
 .. note::
-   The CSRF middleware accepts some configuration parameters that are not set
-   by default as if they are set they have an impact in the csrf validation
-   workflow. The available options are:
+   The CSRF middleware accepts some configuration parameters that are used to
+   adjust the workflow of the CSRF validation. The available options are:
 
    \`CSRF_METHODS\`: HTTP methods against which the csrf check should run.
    Defaults to \`['POST', 'PUT', 'PATCH', 'DELETE']\`.
@@ -97,13 +96,16 @@ REST_ENABLE_CSRF = False
    the expiration the cookie will be removed. Defaults to \`60*60*24*7*52\`
    (1 year).
 
-   \`CSRF_COOKIE_DOMAIN\`: The for which the csrf cookie should be valid.
-   Defaults to \`flask.sessions.SessionInterface.get_cookie_domain\`.
+   \`CSRF_COOKIE_DOMAIN\`: The domain for which the CSRF cookie should be
+   valid. Defaults to \`flask.sessions.SessionInterface.get_cookie_domain\`.
 
-   \`CSRF_COOKIE_PATH\`: The path that should be set for the csrf cookie.
+   \`CSRF_COOKIE_PATH\`: The url path for which the cookie is set. This is
+   useful if you have multiple Flask instances running under the same hostname.
+   They can use different cookie paths, and each instance will only see its own
+   CSRF cookie.
    Defaults to \`flask.sessions.SessionInterface.get_cookie_path\`.
 
-   \`CSRF_COOKIE_SAMESITE\`: Restrict if csrf cookie should be sent along
+   \`CSRF_COOKIE_SAMESITE\`: Restrict if CSRF cookie should be sent along
    requests coming from external sites. Defaults to \`SESSION_COOKIE_SAMESITE\`
    configuation variable, if this is set to a not \`None\` value, or \`Lax\`.
    Lax prevents sending cookies with CSRF-prone requests from external sites,
@@ -113,7 +115,7 @@ REST_ENABLE_CSRF = False
    application \`SECRET_KEY\`.
 
    \`CSRF_SECRET_SALT\`: The salt value used to encode/decode csrf token.
-   Defaults to \`ISSUE_CSRF\`.
+   Defaults to \`invenio-csrf-token\`.
 
    \`CSRF_TOKEN_LENGTH\`: The length of the generated csrf token. Defaults to
    \`12\`.
@@ -121,4 +123,8 @@ REST_ENABLE_CSRF = False
    \`CSRF_ALLOWED_CHARS\`: The allowed characters that can be included in the
    generation of the csrf token. Defaults to \`string.ascii_letters\` +
    \`string.digits\`.
+
+   \`CSRF_FORCE_SECURE_REFERER\`: Flag to disable secure referrer check. This
+   should used only in development if you run your UI application over HTTP.
+   Defaults to \`True\`.
 """

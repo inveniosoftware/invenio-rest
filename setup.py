@@ -83,6 +83,9 @@ setup(
     include_package_data=True,
     platforms='any',
     entry_points={
+        'invenio_base.apps': [
+            'invenio_rest = invenio_rest.csrf:CSRFTokenMiddleware',
+        ],
         'invenio_base.api_apps': [
             'invenio_rest = invenio_rest:InvenioREST',
         ],

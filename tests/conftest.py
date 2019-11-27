@@ -35,7 +35,7 @@ def base_app(instance_path):
     app_.config.update(
         SECRET_KEY='SECRET_KEY',
         TESTING=True,
-        REST_ENABLE_CSRF=False,
+        REST_CSRF_ENABLED=False,
     )
 
     @app_.route('/ping')
@@ -67,12 +67,12 @@ def csrf_app(base_app):
 
 @pytest.fixture()
 def csrf(csrf_app):
-    """Initialize csrf object on every test function.
+    """Initialize CSRF object on every test function.
 
     We don't import `csrf` from `invenio_rest.csrf` because
     like that it is not cleared after every test fuction run.
     """
-    from invenio_rest.csrf import CSRFMiddleware
-    csrf = CSRFMiddleware(csrf_app)
+    from invenio_rest.csrf import CSRFProtectMiddleware
+    csrf = CSRFProtectMiddleware(csrf_app)
     assert 'invenio-csrf' in csrf_app.extensions
     yield csrf
