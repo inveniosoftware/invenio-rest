@@ -111,6 +111,16 @@ class RESTValidationError(RESTException):
     """Error description."""
 
 
+class RESTCSRFError(RESTException):
+    """A standard REST validation error."""
+
+    code = 400
+    """HTTP Status code."""
+
+    description = 'CSRF error.'
+    """Error description."""
+
+
 class SameContentException(RESTException):
     """304 Same Content exception.
 

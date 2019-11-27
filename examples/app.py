@@ -81,9 +81,14 @@ class RecordsListResource(ContentNegotiatedMethodView):
                     'application/json': json_v1_search,
                     'application/xml': xml_v1_search,
                 },
+                'POST': {
+                    'application/json': json_v1_search,
+                    'application/xml': xml_v1_search,
+                },
             },
             default_method_media_type={
                 'GET': 'application/json',
+                'POST': 'application/json',
             },
             default_media_type='application/json',
             **kwargs)
@@ -92,10 +97,15 @@ class RecordsListResource(ContentNegotiatedMethodView):
         """Implement the GET /records."""
         return {"title": "Test"}
 
+    def post(self, **kwargs):
+        return {"message": "OK"}
+
+
 # Create Flask application
 app = Flask(__name__)
 app.config.update({
     'REST_ENABLE_CORS': True,
+    'REST_ENABLE_CSRF': True,
 })
 
 InvenioREST(app)

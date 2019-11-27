@@ -14,6 +14,7 @@ import pkg_resources
 
 from . import config
 from .views import create_api_errorhandler
+from .csrf import CsrfViewMiddleware
 
 
 class InvenioREST(object):
@@ -76,6 +77,9 @@ class InvenioREST(object):
             status=503, message='Service Unavailable'))
         app.errorhandler(504)(create_api_errorhandler(
             status=504, message='Gateway Timeout'))
+
+        if app.config['REST_ENABLE_CSRF']:
+            CsrfViewMiddleware(app)
 
         app.extensions['invenio-rest'] = self
 

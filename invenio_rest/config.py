@@ -75,3 +75,6 @@ REST_MIMETYPE_QUERY_ARG_NAME = None
           'marc21': 'application/marcxml+xml'
        }
 """
+
+REST_ENABLE_CSRF = True
+"""Enable CSRF middleware. (Default: ``True``)"""
