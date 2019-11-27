@@ -192,8 +192,9 @@ protecting against CRSF-attacks in the REST API.
 
 from __future__ import absolute_import, print_function
 
+from .csrf import csrf
 from .ext import InvenioREST
 from .version import __version__
 from .views import ContentNegotiatedMethodView
 
-__all__ = ('__version__', 'InvenioREST', 'ContentNegotiatedMethodView')
+__all__ = ('__version__', 'csrf', 'InvenioREST', 'ContentNegotiatedMethodView')

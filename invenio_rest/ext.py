@@ -42,6 +42,11 @@ class InvenioREST(object):
             CORS(app)
             # CORS can be configured using CORS_* configuration variables.
 
+        # Enable CSRF support if desired
+        if app.config['REST_ENABLE_CSRF']:
+            from .csrf import csrf
+            csrf.init_app(app)
+
         app.errorhandler(400)(create_api_errorhandler(
             status=400, message='Bad Request'))
         app.errorhandler(401)(create_api_errorhandler(

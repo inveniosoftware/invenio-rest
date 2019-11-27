@@ -52,7 +52,7 @@ CORS_EXPOSE_HEADERS = [
 """
 
 REST_ENABLE_CORS = False
-"""Enable CORS configuration. (Default: ``False``)"""
+"""Enable CORS configuration. (Default: ``False``)."""
 
 REST_MIMETYPE_QUERY_ARG_NAME = None
 """Name of the query argument to specify the mimetype wanted for the output.
@@ -74,4 +74,51 @@ REST_MIMETYPE_QUERY_ARG_NAME = None
           'json': 'application/json',
           'marc21': 'application/marcxml+xml'
        }
+"""
+
+REST_ENABLE_CSRF = True
+"""Enable CSRF middleware. (Default: ``True``).
+
+.. note::
+   The CSRF middleware accepts some configuration parameters that are not set
+   by default as if they are set they have an impact in the csrf validation
+   workflow. The available options are:
+
+   \`CSRF_METHODS\`: HTTP methods against which the csrf check should run.
+   Defaults to \`['POST', 'PUT', 'PATCH', 'DELETE']\`.
+
+   \`CSRF_HEADER\`: The name of the request header used for CSRF
+   authentication. Defaults to \`X-CSRF-Token\`.
+
+   \`CSRF_COOKIE_NAME\`: The name of the request cookie used for CSRF
+   authentication. Defaults to \`_csrftoken\`.
+
+   \`CSRF_COOKIE_MAX_AGE\`: The maximum time until the cookie expires. After
+   the expiration the cookie will be removed. Defaults to \`60*60*24*7*52\`
+   (1 year).
+
+   \`CSRF_COOKIE_DOMAIN\`: The for which the csrf cookie should be valid.
+   Defaults to \`flask.sessions.SessionInterface.get_cookie_domain\`.
+
+   \`CSRF_COOKIE_PATH\`: The path that should be set for the csrf cookie.
+   Defaults to \`flask.sessions.SessionInterface.get_cookie_path\`.
+
+   \`CSRF_COOKIE_SAMESITE\`: Restrict if csrf cookie should be sent along
+   requests coming from external sites. Defaults to \`SESSION_COOKIE_SAMESITE\`
+   configuation variable, if this is set to a not \`None\` value, or \`Lax\`.
+   Lax prevents sending cookies with CSRF-prone requests from external sites,
+   such as submitting a form.
+
+   \`CSRF_SECRET\`: Secret key to encode/decode csrf token. Defaults to
+   application \`SECRET_KEY\`.
+
+   \`CSRF_SECRET_SALT\`: The salt value used to encode/decode csrf token.
+   Defaults to \`ISSUE_CSRF\`.
+
+   \`CSRF_TOKEN_LENGTH\`: The length of the generated csrf token. Defaults to
+   \`12\`.
+
+   \`CSRF_ALLOWED_CHARS\`: The allowed characters that can be included in the
+   generation of the csrf token. Defaults to \`string.ascii_letters\` +
+   \`string.digits\`.
 """

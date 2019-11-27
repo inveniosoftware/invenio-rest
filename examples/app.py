@@ -57,7 +57,7 @@ from __future__ import absolute_import, print_function
 import xmltodict
 from flask import Blueprint, Flask, jsonify, make_response
 
-from invenio_rest import ContentNegotiatedMethodView, InvenioREST
+from invenio_rest import ContentNegotiatedMethodView, InvenioREST, csrf
 
 
 def json_v1_search(search_result):
@@ -81,9 +81,14 @@ class RecordsListResource(ContentNegotiatedMethodView):
                     'application/json': json_v1_search,
                     'application/xml': xml_v1_search,
                 },
+                'POST': {
+                    'application/json': json_v1_search,
+                    'application/xml': xml_v1_search,
+                },
             },
             default_method_media_type={
                 'GET': 'application/json',
+                'POST': 'application/json',
             },
             default_media_type='application/json',
             **kwargs)
@@ -92,10 +97,23 @@ class RecordsListResource(ContentNegotiatedMethodView):
         """Implement the GET /records."""
         return {"title": "Test"}
 
+    def post(self, **kwargs):
+        return {"message": "OK"}
+
+
+def csrf_exempt_view():
+    return jsonify({"message": "OK with no CSRF"})
+
+
+def csrf_exempt_blueprint_view():
+    return jsonify({"message": "OK with no CSRF"})
+
+
 # Create Flask application
 app = Flask(__name__)
 app.config.update({
     'REST_ENABLE_CORS': True,
+    'REST_ENABLE_CSRF': True,
 })
 
 InvenioREST(app)
@@ -108,7 +126,25 @@ blueprint = Blueprint(
     static_folder='static',
 )
 
+blueprint_exempt_csrf = Blueprint(
+    'mymodule_exempt_csrf',
+    __name__,
+    url_prefix='/exempt_csrf',
+    template_folder='templates',
+    static_folder='static',
+)
+
 records_view = RecordsListResource.as_view('records')
 blueprint.add_url_rule('/', view_func=records_view)
+blueprint.add_url_rule(
+    '/nocsrf', view_func=csrf.exempt(csrf_exempt_view), methods=['POST'])
+# TODO Check this shouldn't exempt it
+blueprint.add_url_rule(
+    '/nocsrf-2', view_func=csrf_exempt_view, methods=['POST'])
+
+blueprint_exempt_csrf.add_url_rule(
+    '/ping', view_func=csrf_exempt_blueprint_view, methods=['POST'])
+csrf.exempt(blueprint_exempt_csrf)
 
 app.register_blueprint(blueprint)
+app.register_blueprint(blueprint_exempt_csrf)

@@ -17,8 +17,10 @@ import tempfile
 import pytest
 from flask import Flask
 
+from invenio_rest.ext import InvenioREST
 
-@pytest.yield_fixture()
+
+@pytest.fixture()
 def instance_path():
     """Temporary instance path."""
     path = tempfile.mkdtemp()
@@ -33,12 +35,44 @@ def base_app(instance_path):
     app_.config.update(
         SECRET_KEY='SECRET_KEY',
         TESTING=True,
+        REST_ENABLE_CSRF=False,
     )
+
+    @app_.route('/ping')
+    def ping():
+        return 'ping'
+
     return app_
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def app(base_app):
     """Flask application fixture."""
     with base_app.app_context():
         yield base_app
+
+
+@pytest.fixture()
+def csrf_app(base_app):
+    """Flask application fixture with csrf enabled."""
+    InvenioREST(base_app)
+
+    @base_app.route('/csrf-protected', methods=["POST"])
+    def csrf_test():
+        return 'test'
+
+    with base_app.app_context():
+        yield base_app
+
+
+@pytest.fixture()
+def csrf(csrf_app):
+    """Initialize csrf object on every test function.
+
+    We don't import `csrf` from `invenio_rest.csrf` because
+    like that it is not cleared after every test fuction run.
+    """
+    from invenio_rest.csrf import CSRFMiddleware
+    csrf = CSRFMiddleware(csrf_app)
+    assert 'invenio-csrf' in csrf_app.extensions
+    yield csrf
