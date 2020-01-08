@@ -17,6 +17,10 @@ from setuptools.command.test import test as TestCommand
 readme = open('README.rst').read()
 history = open('CHANGES.rst').read()
 
+docs_require = [
+    'Sphinx>=1.4.2',
+]
+
 tests_require = [
     'check-manifest>=0.25',
     'coverage>=4.0',
@@ -32,10 +36,8 @@ tests_require = [
 extras_require = {
     # `cors` moved to `install_requires`, but kept for backward compatibility
     'cors': [],
-    'docs': [
-        'Sphinx>=1.4.2',
-    ],
-    'tests': tests_require,
+    'docs': docs_require,
+    'tests': tests_require + docs_require,
     ':python_version<"3.0.0"': [
         'marshmallow>=2.15.2,<3.0.0',
     ],
@@ -55,7 +57,7 @@ setup_requires = [
 install_requires = [
     'Flask>=0.11.1',
     'Flask-CORS>=2.1.0',
-    'webargs>=5.5.0',
+    'webargs>=5.5.0,<6.0.0',
 ]
 
 packages = find_packages()
