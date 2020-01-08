@@ -1,6 +1,6 @@
 ..
     This file is part of Invenio.
-    Copyright (C) 2015-2019 CERN.
+    Copyright (C) 2015-2020 CERN.
 
     Invenio is free software; you can redistribute it and/or modify it
     under the terms of the MIT License; see LICENSE file for more details.
@@ -8,9 +8,13 @@
 Changes
 =======
 
+Version 1.1.3 (released 2020-01-08)
+
+- Set upper limit version of webargs, lower than 6.0.0.
+
 Version 1.1.2 (released 2019-09-19)
 
-- Bumps webargs to 5.5.0 (provides support for marshmallow 3)
+- Bumps webargs to 5.5.0 (provides support for marshmallow 3).
 
 Version 1.1.1 (released 2019-08-02)
 
