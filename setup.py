@@ -55,8 +55,8 @@ setup_requires = [
 ]
 
 install_requires = [
-    'Flask>=0.11.1',
     'Flask-CORS>=2.1.0',
+    'invenio-base>=1.2.2',
     'webargs>=5.5.0,<6.0.0',
 ]
 

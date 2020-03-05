@@ -9,8 +9,6 @@
 notifications:
   email: false
 
-sudo: false
-
 language: python
 
 matrix:
@@ -27,10 +25,11 @@ env:
   - REQUIREMENTS=devel
 
 python:
-  - "2.7"
-  - "3.5"
+  - "3.6"
+  - "3.7"
 
 before_install:
+  - "pip uninstall -y six"
   - "travis_retry pip install --upgrade pip setuptools py"
   - "travis_retry pip install twine wheel coveralls requirements-builder"
   - "requirements-builder --level=min setup.py > .travis-lowest-requirements.txt"
@@ -53,7 +52,8 @@ deploy:
   password:
     secure: "OkXcHGfaMeDG/CWsRHLMFKwWqzdjx0brUNuc0ZOwcUliOgPWcbenw8qjmJ82kyqBPRcxoaWKZljqFmrTBnVnzHlcRba/cU+Ka62s2paPBMMCW1Qv7MYWuJahDA2LYzUS+QOKr8wLVmnsjAxLTYY9L02slcW/Tyg15+PsWu6wvgWkxpFvOO0y9SqHcN1IP3SQoCGcD5wpWaplYFArislbMb9P5M1eyiDg9F0gNi91LXx5BQTPDEp1qyZQLKiY+f3jry3Jr4kkwk88vIYejO85NV68GD5v3ZRNQWik6vbeRy9x332nnA6dKZ9A/T8dJ4rEClwWklBkDf3Kz4EHbgepCzH1KlG7Av3bDQ94o/6KGd9EYd2KcpbhLza8RQHEZfD7KVwmSevXfCCcjtzzZUvZRbSYqbMXOUhd7HTARxPQbiQ3Wopo2PNFMM4jD+mwBxRv0fGfjCiAg9uZvuUKwpM2EMUXo/r2SN+WpPuMO0pi+vUHpiAVlhDfKg6Zdr4vVo/INw9NgXIskhzhtOKq8xnhB6vNvv1f1CJH69pIEIi/eWERx65BTSdZZdZelqVgyhazDFmfao6JvHlfl4w6wCNkigUpMxBBrADAX+luc8UjceR1iZ/3jSISwS60PKqx+VDvSdE7FakM7OJHdgxaQJ/1KIZ3nYS8ZjJsX9H1feBpSdQ="
   distributions: "sdist bdist_wheel"
+  skip_existing: true
   on:
     tags: true
-    python: "2.7"
+    python: "3.6"
     condition: $REQUIREMENTS = release

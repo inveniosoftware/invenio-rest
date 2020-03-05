@@ -13,6 +13,3 @@ export FLASK_APP=app.py
 
 # Setup app
 mkdir $DIR/instance
-
-# Install specific dependencies
-pip install -r requirements.txt
