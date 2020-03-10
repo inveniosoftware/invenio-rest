@@ -8,6 +8,10 @@
 Changes
 =======
 
+Version 1.2.0 (released 2020-03-10)
+
+- Set upper limit version of webargs, lower than 6.0.0.
+
 Version 1.1.3 (released 2020-01-08)
 
 - Set upper limit version of webargs, lower than 6.0.0.
