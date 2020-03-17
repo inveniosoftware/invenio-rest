@@ -76,8 +76,8 @@ REST_MIMETYPE_QUERY_ARG_NAME = None
        }
 """
 
-REST_ENABLE_CSRF = True
-"""Enable CSRF middleware. (Default: ``True``).
+REST_ENABLE_CSRF = False
+"""Enable CSRF middleware. (Default: ``False``).
 
 .. note::
    The CSRF middleware accepts some configuration parameters that are not set
