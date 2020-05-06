@@ -8,6 +8,12 @@
 Changes
 =======
 
+Version 1.2.1 (released 2020-05-08)
+
+- The CSRF Middleware is now by default disabled.
+- The ``CSRF_SECRET_SALT`` now defaults to ``invenio-csrf-token``.
+- Added a new configuration variable: ``CSRF_FORCE_SECURE_REFERER``.
+
 Version 1.2.0 (released 2020-03-10)
 
 - Centralize dependency management via Invenio-Base.
