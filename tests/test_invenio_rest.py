@@ -121,6 +121,7 @@ def test_cors(app):
 def _obj_to_json_serializer(data, code=200, headers=None):
     if data:
         res = jsonify(data)
+        res.cache_control.no_cache = True
         res.set_etag('abc')
     else:
         res = make_response()
@@ -558,12 +559,16 @@ def _subtest_content_negotiation_method_view(app, content_negotiated_class,
                 assert method_names[parsed['method']] == method
                 assert res.content_type == 'application/json'
             assert res.status_code == 200
+            # check that Cache-Control header is set
+            assert res.cache_control.no_cache
             # check that the ETag is correct
             assert unquote_etag(res.headers['ETag']) == \
                 unquote_etag(quote_etag('abc'))
 
         def check_304_response(res):
             assert res.status_code == 304
+            # check that Cache-Control header is set
+            assert res.cache_control.no_cache
             # check that the ETag is correct
             assert unquote_etag(res.headers['ETag']) == \
                 unquote_etag(quote_etag('abc'))
@@ -690,4 +695,5 @@ def _subtest_content_negotiation_method_view(app, content_negotiated_class,
         last_modified = res.headers['Last-Modified']
         res = client.get(
             '/objects/1', headers={'If-Modified-Since': last_modified})
+        assert res.cache_control.no_cache
         assert res.status_code == 304

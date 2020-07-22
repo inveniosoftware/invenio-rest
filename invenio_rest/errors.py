@@ -149,6 +149,7 @@ class SameContentException(RESTException):
         response = super(SameContentException, self).get_response(
             environ=environ
         )
+        response.cache_control.no_cache = True
         if self.etag is not None:
             response.set_etag(self.etag)
         if self.last_modified is not None:
