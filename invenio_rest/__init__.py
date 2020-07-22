@@ -81,8 +81,7 @@ To finish, we need to create a blueprint that defines an endpoint (here
     >>> blueprint.add_url_rule('/', view_func=records_view)
     >>> app.register_blueprint(blueprint)
 
-Now you can launch your server and request it on the `/records` endpoint, as
-described in :any:`examplesapp`.
+Now you can launch your server and request it on the `/records` endpoint
 
 Building REST APIs for Invenio
 ------------------------------
