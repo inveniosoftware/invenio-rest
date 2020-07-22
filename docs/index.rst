@@ -19,7 +19,6 @@ Invenio-REST.
    installation
    configuration
    usage
-   examplesapp
 
 
 API Reference
