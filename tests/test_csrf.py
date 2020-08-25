@@ -177,8 +177,9 @@ def test_skip_csrf_check(csrf_app, csrf):
 
 def test_csrf_not_signed_correctly(csrf_app, csrf):
     """Test CSRF malicious attempt with passing malicious cookie and header."""
-    from invenio_rest.errors import RESTCSRFError
     from itsdangerous import TimedJSONWebSignatureSerializer
+
+    from invenio_rest.errors import RESTCSRFError
 
     with csrf_app.test_client() as client:
         # try to pass our own signed cookie and header in an attempt to bypass
