@@ -8,6 +8,11 @@
 Changes
 =======
 
+Version 1.2.2 (released 2020-09-27)
+
+- Adds Cache-Control:'no-cache' header to 304 responses to
+  ensure that browsers will not cache responses client side
+
 Version 1.2.1 (released 2020-05-08)
 
 - The CSRF Middleware is now by default disabled.
