@@ -240,10 +240,10 @@ class CSRFProtectMiddleware(CSRFTokenMiddleware):
                 return
 
             view = app.view_functions.get(request.endpoint)
-            dest = '{0}.{1}'.format(view.__module__, view.__name__)
-
-            if dest in self._exempt_views:
-                return
+            if view:
+                dest = '{0}.{1}'.format(view.__module__, view.__name__)
+                if dest in self._exempt_views:
+                    return
 
             return csrf_validate()
 
