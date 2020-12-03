@@ -18,19 +18,13 @@ readme = open('README.rst').read()
 history = open('CHANGES.rst').read()
 
 docs_require = [
-    'Sphinx>=1.4.2',
+    'Sphinx>=3.3.0',
 ]
 
 tests_require = [
-    'check-manifest>=0.25',
-    'coverage>=4.0',
     'xmltodict>=0.11.0',
-    'isort>=4.2.15',
     'mock>=1.3.0',
-    'pydocstyle>=1.0.0',
-    'pytest-cov>=1.8.0',
-    'pytest-pep8>=1.0.6',
-    'pytest>=4.0.0,<5.0.0',
+    'pytest-invenio>=1.4.0',
 ]
 
 extras_require = {
