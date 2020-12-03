@@ -113,7 +113,7 @@ def _is_referer_secure(referer):
 
 
 def _abort400(reason):
-        abort(400, reason)
+    abort(400, reason)
 
 
 def csrf_validate():
@@ -154,8 +154,8 @@ def csrf_validate():
 
 
 def reset_token():
-        """Change the CSRF token in use for a request."""
-        request.csrf_cookie_needs_reset = True
+    """Change the CSRF token in use for a request."""
+    request.csrf_cookie_needs_reset = True
 
 
 class CSRFTokenMiddleware():
@@ -268,5 +268,6 @@ class CSRFProtectMiddleware(CSRFTokenMiddleware):
 
         self._exempt_views.add(view_location)
         return view
+
 
 csrf = CSRFProtectMiddleware()

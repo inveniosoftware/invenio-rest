@@ -20,6 +20,7 @@ recursive-include docs *.bat
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs Makefile
+recursive-include .github/workflows *.yml
 recursive-include invenio_rest *.html
 recursive-include invenio_rest *.mo
 recursive-include invenio_rest *.po
