@@ -8,6 +8,10 @@
 Changes
 =======
 
+Version 1.2.3 (released 2020-12-07)
+
+- Fixes a bug with CSRF checking when the endpoint did not exist.
+
 Version 1.2.2 (released 2020-09-27)
 
 - Adds Cache-Control:'no-cache' header to 304 responses to

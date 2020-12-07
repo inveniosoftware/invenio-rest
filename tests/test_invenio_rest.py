@@ -18,7 +18,6 @@ import pkg_resources
 import pytest
 from flask import Flask, abort, make_response, request
 from flask.json import jsonify
-from mock import patch
 from six.moves.urllib.parse import urlencode
 from werkzeug.http import quote_etag, unquote_etag
 
