@@ -23,7 +23,6 @@ docs_require = [
 
 tests_require = [
     'xmltodict>=0.11.0',
-    'mock>=1.3.0',
     'pytest-invenio>=1.4.0',
 ]
 
@@ -50,7 +49,7 @@ setup_requires = [
 
 install_requires = [
     'Flask-CORS>=2.1.0',
-    'invenio-base>=1.2.2',
+    'invenio-base>=1.2.3',
     'webargs>=5.5.0,<6.0.0',
 ]
 
@@ -96,10 +95,10 @@ setup(
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython',
         'Development Status :: 5 - Production/Stable',
     ],
