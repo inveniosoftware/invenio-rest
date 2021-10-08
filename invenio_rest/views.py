@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2018 CERN.
+# Copyright (C) 2021      TU Wien.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -9,6 +10,8 @@
 """REST API module for Invenio."""
 
 from __future__ import absolute_import, print_function
+
+from datetime import timezone
 
 from flask import Response, abort, current_app, g, jsonify, make_response, \
     request
@@ -287,5 +290,12 @@ class ContentNegotiatedMethodView(MethodView):
     def check_if_modified_since(self, dt, etag=None):
         """Validate If-Modified-Since with current request conditions."""
         dt = dt.replace(microsecond=0)
+
+        # since Werkzeug v2.0, request-related datetime values are
+        # timezone-aware, which compared dates to be timezone-aware as well
+        if request.if_modified_since and request.if_modified_since.tzinfo and \
+                not dt.tzinfo:
+            dt = dt.replace(tzinfo=timezone.utc)
+
         if request.if_modified_since and dt <= request.if_modified_since:
             raise SameContentException(etag, last_modified=dt)

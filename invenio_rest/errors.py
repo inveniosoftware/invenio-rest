@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2018 CERN.
+# Copyright (C) 2021      TU Wien.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -61,11 +62,11 @@ class RESTException(HTTPException):
         """
         return [e.to_dict() for e in self.errors] if self.errors else None
 
-    def get_description(self, environ=None):
+    def get_description(self, environ=None, scope=None):
         """Get the description."""
         return self.description
 
-    def get_body(self, environ=None):
+    def get_body(self, environ=None, scope=None):
         """Get the request body."""
         body = dict(
             status=self.code,
@@ -81,7 +82,7 @@ class RESTException(HTTPException):
 
         return json.dumps(body)
 
-    def get_headers(self, environ=None):
+    def get_headers(self, environ=None, scope=None):
         """Get a list of headers."""
         return [('Content-Type', 'application/json')]
 
@@ -144,7 +145,7 @@ class SameContentException(RESTException):
         self.etag = etag
         self.last_modified = last_modified
 
-    def get_response(self, environ=None):
+    def get_response(self, environ=None, scope=None):
         """Get a list of headers."""
         response = super(SameContentException, self).get_response(
             environ=environ
