@@ -31,12 +31,6 @@ extras_require = {
     'cors': [],
     'docs': docs_require,
     'tests': tests_require + docs_require,
-    ':python_version<"3.0.0"': [
-        'marshmallow>=2.15.2,<3.0.0',
-    ],
-    ':python_version>="3.0.0"': [
-        'marshmallow>=2.15.2',
-    ],
 }
 
 extras_require['all'] = []
@@ -49,7 +43,8 @@ setup_requires = [
 
 install_requires = [
     'Flask-CORS>=2.1.0',
-    'invenio-base>=1.2.3',
+    'invenio-base>=1.2.5',
+    'marshmallow>=2.15.2',
     'webargs>=5.5.0,<6.0.0',
 ]
 
