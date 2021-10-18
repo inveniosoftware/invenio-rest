@@ -8,6 +8,10 @@
 Changes
 =======
 
+Version 1.2.4 (released 2021-10-18)
+
+- Support for Flask v2.0
+
 Version 1.2.3 (released 2020-12-07)
 
 - Fixes a bug with CSRF checking when the endpoint did not exist.
