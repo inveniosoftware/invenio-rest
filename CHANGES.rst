@@ -8,6 +8,10 @@
 Changes
 =======
 
+Version 1.2.5 (released 2021-12-04)
+
+- Fix issue with CSRF token being reset on every request.
+
 Version 1.2.4 (released 2021-10-18)
 
 - Support for Flask v2.0
