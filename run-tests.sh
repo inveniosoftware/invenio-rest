@@ -17,4 +17,4 @@ pydocstyle invenio_rest tests docs
 isort invenio_rest tests --check-only --diff
 check-manifest --ignore ".*-requirements.txt"
 sphinx-build -qnNW docs docs/_build/html
-python setup.py test
+pytest
