@@ -83,7 +83,8 @@ REST_CSRF_ENABLED = False
    The CSRF middleware accepts some configuration parameters that are used to
    adjust the workflow of the CSRF validation. The available options are:
 
-   \\`CSRF_METHODS\\`: HTTP methods against which the csrf check should run.
+   \\`CSRF_SAFE_METHODS\\`: HTTP methods against which the csrf check should
+   NOT run.
    Defaults to \\`['POST', 'PUT', 'PATCH', 'DELETE']\\`.
 
    \\`CSRF_HEADER\\`: The name of the request header used for CSRF

@@ -48,9 +48,16 @@ def test_csrf_disabled(csrf_app):
 def test_csrf_enabled(csrf_app, csrf):
     """Test CSRF enabled."""
     with csrf_app.test_client() as client:
-        # call a dummy request to obtain the csrf token in the first time
-        client.get('/ping')
+        # obtain a token
+        res = client.post(
+            '/csrf-protected',
+            data=json.dumps(dict(foo='bar')),
+            content_type='application/json'
+        )
+        assert res.json['message'] == REASON_NO_CSRF_COOKIE
+        assert res.status_code == 400
 
+        # don't send the token
         res = client.post(
             '/csrf-protected',
             data=json.dumps(dict(foo='bar')),
@@ -59,6 +66,7 @@ def test_csrf_enabled(csrf_app, csrf):
         assert res.json['message'] == REASON_BAD_TOKEN
         assert res.status_code == 400
 
+        # send the token
         CSRF_COOKIE_NAME = csrf_app.config['CSRF_COOKIE_NAME']
         CSRF_HEADER_NAME = csrf_app.config['CSRF_HEADER']
 
@@ -77,6 +85,14 @@ def test_csrf_enabled(csrf_app, csrf):
 
         )
         assert res.status_code == 200
+
+        # The CSRF token should not have changed.
+        new_cookie = next(
+            (cookie for cookie in client.cookie_jar
+                if cookie.name == CSRF_COOKIE_NAME),
+            None
+        )
+        assert cookie.value == new_cookie.value
 
 
 def test_csrf_before_csrf_protect(csrf_app, csrf):
