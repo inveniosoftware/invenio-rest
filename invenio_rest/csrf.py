@@ -221,8 +221,8 @@ class CSRFTokenMiddleware():
                 request, 'csrf_cookie_needs_reset', False)
             cookie_is_missing = current_app.config['CSRF_COOKIE_NAME'] not in \
                 request.cookies
-            if is_method_vulnerable \
-                    and (cookie_needs_reset or cookie_is_missing):
+            if (is_method_vulnerable and cookie_is_missing) \
+                    or cookie_needs_reset:
                 _set_token(response)
             return response
 
