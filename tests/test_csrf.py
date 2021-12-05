@@ -17,7 +17,7 @@ from flask import Blueprint, Flask, request
 
 from invenio_rest.csrf import REASON_BAD_REFERER, REASON_BAD_TOKEN, \
     REASON_INSECURE_REFERER, REASON_MALFORMED_REFERER, REASON_NO_CSRF_COOKIE, \
-    REASON_NO_REFERER, CSRFProtectMiddleware
+    REASON_NO_REFERER, CSRFProtectMiddleware, _get_new_csrf_token
 from invenio_rest.ext import InvenioREST
 
 
@@ -195,15 +195,17 @@ def test_csrf_not_signed_correctly(csrf_app, csrf):
     """Test CSRF malicious attempt with passing malicious cookie and header."""
     from itsdangerous import TimedJSONWebSignatureSerializer
 
-    from invenio_rest.errors import RESTCSRFError
-
     with csrf_app.test_client() as client:
         # try to pass our own signed cookie and header in an attempt to bypass
         # the CSRF check
-        csrf_serializer = TimedJSONWebSignatureSerializer('my_secret')
+        csrf_serializer = TimedJSONWebSignatureSerializer(
+            'invalid_secret',
+            salt='invalid_salt',
+        )
         malicious_cookie = csrf_serializer.dumps(
             {'user': 'malicious'}, 'my_secret')
         CSRF_COOKIE_NAME = csrf_app.config['CSRF_COOKIE_NAME']
+        CSRF_HEADER_NAME = csrf_app.config['CSRF_HEADER']
         client.set_cookie('localhost', CSRF_COOKIE_NAME, malicious_cookie)
 
         res = client.post(
@@ -211,11 +213,76 @@ def test_csrf_not_signed_correctly(csrf_app, csrf):
             data=json.dumps(dict(foo='bar')),
             content_type='application/json',
             headers={
-                'X-CSRF-Token': malicious_cookie
+                CSRF_HEADER_NAME: malicious_cookie
             },
         )
 
-        assert res.json['message'] == RESTCSRFError.description
+        assert res.json['message'] == REASON_BAD_TOKEN
+        assert res.status_code == 400
+
+
+def test_csrf_token_rotation(csrf_app, csrf):
+    """Test CSRF token rotation."""
+    from itsdangerous import TimedJSONWebSignatureSerializer
+
+    with csrf_app.test_client() as client:
+        CSRF_COOKIE_NAME = csrf_app.config['CSRF_COOKIE_NAME']
+        CSRF_HEADER_NAME = csrf_app.config['CSRF_HEADER']
+
+        # Token in grace period - succeeds but token gets rotated
+        expired_token = _get_new_csrf_token(expires_in=-1)
+        client.set_cookie('localhost', CSRF_COOKIE_NAME, expired_token)
+        old_cookie = {
+            cookie.name: cookie for cookie in client.cookie_jar}['csrftoken']
+        res = client.post(
+            '/csrf-protected',
+            data=json.dumps(dict(foo='bar')),
+            content_type='application/json',
+            headers={
+                CSRF_HEADER_NAME: expired_token
+            },
+        )
+        assert res.status_code == 200
+        # Token was rotated and new requests succeeds
+        new_cookie = {
+            cookie.name: cookie for cookie in client.cookie_jar}['csrftoken']
+        assert new_cookie.value != old_cookie.value
+        res = client.post(
+            '/csrf-protected',
+            data=json.dumps(dict(foo='bar')),
+            content_type='application/json',
+            headers={
+                CSRF_HEADER_NAME: new_cookie.value
+            },
+        )
+        assert res.status_code == 200
+        # Subsequent requests doesn't rotate CSRF token
+        res = client.post(
+            '/csrf-protected',
+            data=json.dumps(dict(foo='bar')),
+            content_type='application/json',
+            headers={
+                CSRF_HEADER_NAME: new_cookie.value
+            },
+        )
+        last_cookie = {
+            cookie.name: cookie for cookie in client.cookie_jar}['csrftoken']
+        assert new_cookie.value == last_cookie.value
+        assert res.status_code == 200
+
+        # Token outside grace period
+        # - Hack to have a negative grace period to force the error.
+        csrf_app.config['CSRF_TOKEN_GRACE_PERIOD'] = -10000
+        expired_token = _get_new_csrf_token(expires_in=-60*60*24*14)
+        client.set_cookie('localhost', CSRF_COOKIE_NAME, expired_token)
+        res = client.post(
+            '/csrf-protected',
+            data=json.dumps(dict(foo='bar')),
+            content_type='application/json',
+            headers={
+                CSRF_HEADER_NAME: expired_token
+            },
+        )
         assert res.status_code == 400
 
 

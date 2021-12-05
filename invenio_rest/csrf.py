@@ -16,9 +16,11 @@ about CSRF protection. For more information you can see here:
 import re
 import secrets
 import string
+from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, abort, current_app, request
-from itsdangerous import BadSignature, TimedJSONWebSignatureSerializer
+from itsdangerous import BadSignature, SignatureExpired, \
+    TimedJSONWebSignatureSerializer
 from six import string_types
 from six.moves.urllib.parse import urlparse
 
@@ -34,27 +36,32 @@ REASON_MALFORMED_REFERER = "Referer checking failed - Referer is malformed."
 REASON_INSECURE_REFERER = (
     "Referer checking failed - Referer is insecure while host is secure."
 )
+REASON_TOKEN_EXPIRED = "CSRF token expired. Try again."
 
 
-def _get_csrf_serializer():
+def _get_csrf_serializer(expires_in=None):
     """Note that this serializer is used to encode/decode the CSRF cookie.
 
     In case you change this implementation bear in mind that the token
     generated must be signed so as to avoid any client-side tampering.
     """
+    expires_in = expires_in or current_app.config['CSRF_TOKEN_EXPIRES_IN']
+
     return TimedJSONWebSignatureSerializer(
         current_app.config.get(
             'CSRF_SECRET',
             current_app.config.get('SECRET_KEY') or 'CHANGE_ME'),
-        salt=current_app.config['CSRF_SECRET_SALT'])
+        salt=current_app.config['CSRF_SECRET_SALT'],
+        expires_in=expires_in,
+    )
 
 
 def _get_random_string(length, allowed_chars):
     return ''.join(secrets.choice(allowed_chars) for i in range(length))
 
 
-def _get_new_csrf_token():
-    csrf_serializer = _get_csrf_serializer()
+def _get_new_csrf_token(expires_in=None):
+    csrf_serializer = _get_csrf_serializer(expires_in=expires_in)
     encoded_token = csrf_serializer.dumps(
         _get_random_string(
             current_app.config['CSRF_TOKEN_LENGTH'],
@@ -77,8 +84,18 @@ def _decode_csrf(data):
     csrf_serializer = _get_csrf_serializer()
     try:
         return csrf_serializer.loads(data)
+    except SignatureExpired as e:
+        grace_period = timedelta(
+                seconds=current_app.config['CSRF_TOKEN_GRACE_PERIOD'])
+        if e.date_signed < datetime.now(tz=timezone.utc) - grace_period:
+            # Grace period for token rotation exceeded.
+            _abort400(REASON_TOKEN_EXPIRED)
+        else:
+            # Accept expired token, but rotate it to a new one.
+            reset_token()
+            return e.payload
     except BadSignature:
-        raise RESTCSRFError()
+        _abort400(REASON_BAD_TOKEN)
 
 
 def _set_token(response):
@@ -86,7 +103,8 @@ def _set_token(response):
         current_app.config['CSRF_COOKIE_NAME'],
         _get_new_csrf_token(),
         max_age=current_app.config.get(
-            'CSRF_COOKIE_MAX_AGE', 60*60*24*7*52),
+            # 1 week for cookie (but we rotate the token every day)
+            'CSRF_COOKIE_MAX_AGE', 60*60*24*7),
         domain=current_app.config.get(
             'CSRF_COOKIE_DOMAIN',
             current_app.session_interface.get_cookie_domain(
@@ -175,7 +193,7 @@ class CSRFTokenMiddleware():
         :param app: An instance of :class:`flask.Flask`.
         """
         app.config.setdefault('CSRF_COOKIE_NAME', 'csrftoken')
-        app.config.setdefault('CSRF_HEADER', 'HTTP_X_CSRFTOKEN')
+        app.config.setdefault('CSRF_HEADER', 'X-CSRFToken')
         app.config.setdefault(
             'CSRF_METHODS', ['POST', 'PUT', 'PATCH', 'DELETE'])
         app.config.setdefault('CSRF_TOKEN_LENGTH', 32)
@@ -186,6 +204,15 @@ class CSRFTokenMiddleware():
         app.config.setdefault(
             'CSRF_COOKIE_SAMESITE',
             app.config.get('SESSION_COOKIE_SAMESITE') or 'Lax')
+        # The token last for 24 hours, but the cookie for 7 days. This allows
+        # us to implement transparent token rotation during those 7 days. Note,
+        # that the token is automatically rotated on login, thus you can also
+        # change PERMANENT_SESSION_LIFETIME
+        app.config.setdefault('CSRF_TOKEN_EXPIRES_IN', 60*60*24)
+        # We allow usage of an expired CSRF token during this period. This way
+        # we can rotate the CSRF token without the user getting an CSRF error.
+        # Align with CSRF_COOKIE_MAX_AGE
+        app.config.setdefault('CSRF_TOKEN_GRACE_PERIOD', 60*60*24*7)
 
         @app.after_request
         def csrf_send(response):
