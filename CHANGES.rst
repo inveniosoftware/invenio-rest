@@ -8,6 +8,11 @@
 Changes
 =======
 
+Version 1.2.6 (released 2021-12-05)
+
+- Add support for CSRF token rotation during a grace period to allow clients
+  transparently rotate the CSRF token without being prompted with CSRF errors.
+
 Version 1.2.5 (released 2021-12-04)
 
 - Fix issue with CSRF token being reset on every request.
