@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2020 CERN.
+# Copyright (C) 2022 Northwestern University.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -41,6 +42,7 @@ for reqs in extras_require.values():
 install_requires = [
     'Flask-CORS>=2.1.0',
     'invenio-base>=1.2.5',
+    'itsdangerous>=1.1,<2.1',
     'marshmallow>=2.15.2',
     'webargs>=5.5.0,<6.0.0',
 ]
