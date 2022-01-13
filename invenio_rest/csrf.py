@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2020 CERN.
+# Copyright (C) 2022 Northwestern University.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -87,7 +88,12 @@ def _decode_csrf(data):
     except SignatureExpired as e:
         grace_period = timedelta(
                 seconds=current_app.config['CSRF_TOKEN_GRACE_PERIOD'])
-        if e.date_signed < datetime.now(tz=timezone.utc) - grace_period:
+        # Because we support ItsDangerous 1.X and 2.X we need to compute the
+        # appropriately-timezone-aware-or-naive datetime. See
+        # https://github.com/pallets/itsdangerous/blob/1.0.x/src/itsdangerous/jws.py#L212  # noqa
+        # https://github.com/pallets/itsdangerous/blob/2.0.x/src/itsdangerous/jws.py#L244  # noqa
+        now = datetime.now(tz=timezone.utc) if e.date_signed.tzinfo else datetime.utcnow()  # noqa
+        if e.date_signed < now - grace_period:
             # Grace period for token rotation exceeded.
             _abort400(REASON_TOKEN_EXPIRED)
         else:
