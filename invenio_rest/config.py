@@ -15,7 +15,7 @@ configuration options.
 
 from __future__ import unicode_literals
 
-CORS_RESOURCES = '*'
+CORS_RESOURCES = "*"
 """Dictionary for configuring CORS for endpoints.
 
    See Flask-CORS for further details.
@@ -36,12 +36,12 @@ CORS_SEND_WILDCARD = True
 """
 
 CORS_EXPOSE_HEADERS = [
-    'ETag',
-    'Link',
-    'X-RateLimit-Limit',
-    'X-RateLimit-Remaining',
-    'X-RateLimit-Reset',
-    'Content-Type',
+    "ETag",
+    "Link",
+    "X-RateLimit-Limit",
+    "X-RateLimit-Remaining",
+    "X-RateLimit-Reset",
+    "Content-Type",
 ]
 """Expose the following headers.
 

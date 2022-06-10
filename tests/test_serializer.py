@@ -19,19 +19,20 @@ from invenio_rest.serializer import BaseSchema, result_wrapper
 
 def test_serialize_pretty(app):
     """Test pretty JSON."""
-    class TestSchema(BaseSchema):
-        title = fields.Str(attribute='title')
 
-    data = {'title': 'test'}
-    assert (TestSchema().dump(data)).data == {'title': 'test'}
+    class TestSchema(BaseSchema):
+        title = fields.Str(attribute="title")
+
+    data = {"title": "test"}
+    assert (TestSchema().dump(data)).data == {"title": "test"}
 
 
 def test_marshmallow_compatibility():
     """Test wrapper class for marshmallow schema compatibility."""
-    dict_result = {'test': 1}
-    list_result = [{'test': 1}, {'test': 2}]
-    old_marshal = namedtuple('MarshalResult', ['data', 'errors'])
-    tuple_result = old_marshal({'test': 1}, [{'field': 5}])
+    dict_result = {"test": 1}
+    list_result = [{"test": 1}, {"test": 2}]
+    old_marshal = namedtuple("MarshalResult", ["data", "errors"])
+    tuple_result = old_marshal({"test": 1}, [{"field": 5}])
 
     wrapped = result_wrapper(dict_result)
 

@@ -13,8 +13,7 @@ from __future__ import absolute_import, print_function
 
 from datetime import timezone
 
-from flask import Response, abort, current_app, g, jsonify, make_response, \
-    request
+from flask import Response, abort, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from werkzeug.exceptions import HTTPException
 
@@ -34,14 +33,16 @@ def create_api_errorhandler(**kwargs):
     :param \*\*kwargs: It contains the ``'status'`` and the ``'message'``
         to describe the error.
     """
+
     def api_errorhandler(e):
         if isinstance(e, RESTException):
             return e.get_response()
         elif isinstance(e, HTTPException) and e.description:
-            kwargs['message'] = e.description
-        if kwargs.get('status', 400) >= 500 and hasattr(g, 'sentry_event_id'):
-            kwargs['error_id'] = str(g.sentry_event_id)
-        return make_response(jsonify(kwargs), kwargs['status'])
+            kwargs["message"] = e.description
+        if kwargs.get("status", 400) >= 500 and hasattr(g, "sentry_event_id"):
+            kwargs["error_id"] = str(g.sentry_event_id)
+        return make_response(jsonify(kwargs), kwargs["status"])
+
     return api_errorhandler
 
 
@@ -53,9 +54,16 @@ class ContentNegotiatedMethodView(MethodView):
     accept type. It also provides a helper method for handling ETags.
     """
 
-    def __init__(self, serializers=None, method_serializers=None,
-                 serializers_query_aliases=None, default_media_type=None,
-                 default_method_media_type=None, *args, **kwargs):
+    def __init__(
+        self,
+        serializers=None,
+        method_serializers=None,
+        serializers_query_aliases=None,
+        default_media_type=None,
+        default_method_media_type=None,
+        *args,
+        **kwargs
+    ):
         """Register the serializing functions.
 
         Serializing functions will receive all named and non named arguments
@@ -93,12 +101,13 @@ class ContentNegotiatedMethodView(MethodView):
             if len(self.serializers) == 1:
                 self.default_media_type = next(iter(self.serializers.keys()))
             elif len(self.serializers) > 1:
-                raise ValueError('Multiple serializers with no default media'
-                                 ' type')
+                raise ValueError("Multiple serializers with no default media" " type")
         # set method serializers
-        self.method_serializers = ({key.upper(): func for key, func in
-                                    method_serializers.items()} if
-                                   method_serializers else {})
+        self.method_serializers = (
+            {key.upper(): func for key, func in method_serializers.items()}
+            if method_serializers
+            else {}
+        )
         # set serializer aliases
         self.serializers_query_aliases = serializers_query_aliases or {}
         # create default method media_types dict if none has been given
@@ -106,18 +115,18 @@ class ContentNegotiatedMethodView(MethodView):
             self.default_method_media_type = {}
             for http_method, meth_serial in self.method_serializers.items():
                 if len(self.method_serializers[http_method]) == 1:
-                    self.default_method_media_type[http_method] = \
-                        next(iter(self.method_serializers[http_method].keys()))
+                    self.default_method_media_type[http_method] = next(
+                        iter(self.method_serializers[http_method].keys())
+                    )
                 elif len(self.method_serializers[http_method]) > 1:
                     # try to use global default media type
-                    if default_media_type in \
-                            self.method_serializers[http_method]:
-                        self.default_method_media_type[http_method] = \
-                            default_media_type
+                    if default_media_type in self.method_serializers[http_method]:
+                        self.default_method_media_type[http_method] = default_media_type
                     else:
-                        raise ValueError('Multiple serializers for method {0}'
-                                         'with no default media type'.format(
-                                             http_method))
+                        raise ValueError(
+                            "Multiple serializers for method {0}"
+                            "with no default media type".format(http_method)
+                        )
 
     def get_method_serializers(self, http_method):
         """Get request method serializers + default media type.
@@ -131,19 +140,18 @@ class ContentNegotiatedMethodView(MethodView):
         :param http_method: HTTP method as a string.
         :returns: Tuple of serializers and default media type.
         """
-        if http_method == 'HEAD' and 'HEAD' not in self.method_serializers:
-            http_method = 'GET'
+        if http_method == "HEAD" and "HEAD" not in self.method_serializers:
+            http_method = "GET"
 
         return (
             self.method_serializers.get(http_method, self.serializers),
-            self.default_method_media_type.get(
-                http_method, self.default_media_type)
+            self.default_method_media_type.get(http_method, self.default_media_type),
         )
 
     def _match_serializers_by_query_arg(self, serializers):
         """Match serializer by query arg."""
         # if the format query argument is present, match the serializer
-        arg_name = current_app.config.get('REST_MIMETYPE_QUERY_ARG_NAME')
+        arg_name = current_app.config.get("REST_MIMETYPE_QUERY_ARG_NAME")
         if arg_name:
             arg_value = request.args.get(arg_name, None)
 
@@ -151,15 +159,13 @@ class ContentNegotiatedMethodView(MethodView):
                 return None
             # Search for the serializer matching the format
             try:
-                return serializers[
-                    self.serializers_query_aliases[arg_value]]
+                return serializers[self.serializers_query_aliases[arg_value]]
             except KeyError:  # either no serializer for this format
                 return None
 
         return None
 
-    def _match_serializers_by_accept_headers(self, serializers,
-                                             default_media_type):
+    def _match_serializers_by_accept_headers(self, serializers, default_media_type):
         """Match serializer by `Accept` headers."""
         # Bail out fast if no accept headers were given.
         if len(request.accept_mimetypes) == 0:
@@ -172,10 +178,10 @@ class ContentNegotiatedMethodView(MethodView):
         for client_accept, quality in request.accept_mimetypes:
             if quality <= best_quality:
                 continue
-            if client_accept == '*/*':
+            if client_accept == "*/*":
                 has_wildcard = True
             for s in serializers:
-                if s in ['*/*', client_accept] and quality > 0:
+                if s in ["*/*", client_accept] and quality > 0:
                     best_quality = quality
                     best = s
 
@@ -202,9 +208,9 @@ class ContentNegotiatedMethodView(MethodView):
         :returns: Best matching serializer based on `format` query arg first,
             then client `Accept` headers or None if no matching serializer.
         """
-        return self._match_serializers_by_query_arg(serializers) or self.\
-            _match_serializers_by_accept_headers(serializers,
-                                                 default_media_type)
+        return self._match_serializers_by_query_arg(
+            serializers
+        ) or self._match_serializers_by_accept_headers(serializers, default_media_type)
 
     def make_response(self, *args, **kwargs):
         """Create a Flask Response.
@@ -218,7 +224,8 @@ class ContentNegotiatedMethodView(MethodView):
             matches current Accept header.
         """
         serializer = self.match_serializers(
-            *self.get_method_serializers(request.method))
+            *self.get_method_serializers(request.method)
+        )
 
         if serializer:
             return serializer(*args, **kwargs)
@@ -271,18 +278,28 @@ class ContentNegotiatedMethodView(MethodView):
         """
         # bool(:py:class:`werkzeug.datastructures.ETags`) is not consistent
         # in Python 3. bool(Etags()) == True even though it is empty.
-        if len(request.if_match.as_set(include_weak=weak)) > 0 or \
-                request.if_match.star_tag:
-            contains_etag = (request.if_match.contains_weak(etag) if weak
-                             else request.if_match.contains(etag))
-            if not contains_etag and '*' not in request.if_match:
+        if (
+            len(request.if_match.as_set(include_weak=weak)) > 0
+            or request.if_match.star_tag
+        ):
+            contains_etag = (
+                request.if_match.contains_weak(etag)
+                if weak
+                else request.if_match.contains(etag)
+            )
+            if not contains_etag and "*" not in request.if_match:
                 abort(412)
-        if len(request.if_none_match.as_set(include_weak=weak)) > 0 or \
-                request.if_none_match.star_tag:
-            contains_etag = (request.if_none_match.contains_weak(etag) if weak
-                             else request.if_none_match.contains(etag))
-            if contains_etag or '*' in request.if_none_match:
-                if request.method in ('GET', 'HEAD'):
+        if (
+            len(request.if_none_match.as_set(include_weak=weak)) > 0
+            or request.if_none_match.star_tag
+        ):
+            contains_etag = (
+                request.if_none_match.contains_weak(etag)
+                if weak
+                else request.if_none_match.contains(etag)
+            )
+            if contains_etag or "*" in request.if_none_match:
+                if request.method in ("GET", "HEAD"):
                     raise SameContentException(etag)
                 else:
                     abort(412)
@@ -293,8 +310,11 @@ class ContentNegotiatedMethodView(MethodView):
 
         # since Werkzeug v2.0, request-related datetime values are
         # timezone-aware, which compared dates to be timezone-aware as well
-        if request.if_modified_since and request.if_modified_since.tzinfo and \
-                not dt.tzinfo:
+        if (
+            request.if_modified_since
+            and request.if_modified_since.tzinfo
+            and not dt.tzinfo
+        ):
             dt = dt.replace(tzinfo=timezone.utc)
 
         if request.if_modified_since and dt <= request.if_modified_since:

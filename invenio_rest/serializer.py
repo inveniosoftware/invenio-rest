@@ -27,7 +27,9 @@ class MarshmalDict(dict):
             "Schema().dump().data and Schema().dump().errors "
             "as well as Schema().load().data and Schema().loads().data"
             "attributes are deprecated in marshmallow v3.x.",
-            category=PendingDeprecationWarning, stacklevel=2)
+            category=PendingDeprecationWarning,
+            stacklevel=2,
+        )
         return self
 
 
@@ -45,7 +47,9 @@ class MarshmalList(list):
             "Schema().dump().data and Schema().dump().errors "
             "as well as Schema().load().data and Schema().loads().data"
             "attributes are deprecated in marshmallow v3.x.",
-            category=PendingDeprecationWarning, stacklevel=2)
+            category=PendingDeprecationWarning,
+            stacklevel=2,
+        )
         return self
 
 

@@ -20,17 +20,14 @@ import string
 from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, abort, current_app, request
-from itsdangerous import BadSignature, SignatureExpired, \
-    TimedJSONWebSignatureSerializer
+from itsdangerous import BadSignature, SignatureExpired, TimedJSONWebSignatureSerializer
 from six import string_types
 from six.moves.urllib.parse import urlparse
 
 from .errors import RESTCSRFError
 
 REASON_NO_REFERER = "Referer checking failed - no Referer."
-REASON_BAD_REFERER = (
-    "Referer checking failed - %s does not match any trusted origins."
-)
+REASON_BAD_REFERER = "Referer checking failed - %s does not match any trusted origins."
 REASON_NO_CSRF_COOKIE = "CSRF cookie not set."
 REASON_BAD_TOKEN = "CSRF token missing or incorrect."
 REASON_MALFORMED_REFERER = "Referer checking failed - Referer is malformed."
@@ -46,27 +43,27 @@ def _get_csrf_serializer(expires_in=None):
     In case you change this implementation bear in mind that the token
     generated must be signed so as to avoid any client-side tampering.
     """
-    expires_in = expires_in or current_app.config['CSRF_TOKEN_EXPIRES_IN']
+    expires_in = expires_in or current_app.config["CSRF_TOKEN_EXPIRES_IN"]
 
     return TimedJSONWebSignatureSerializer(
         current_app.config.get(
-            'CSRF_SECRET',
-            current_app.config.get('SECRET_KEY') or 'CHANGE_ME'),
-        salt=current_app.config['CSRF_SECRET_SALT'],
+            "CSRF_SECRET", current_app.config.get("SECRET_KEY") or "CHANGE_ME"
+        ),
+        salt=current_app.config["CSRF_SECRET_SALT"],
         expires_in=expires_in,
     )
 
 
 def _get_random_string(length, allowed_chars):
-    return ''.join(secrets.choice(allowed_chars) for i in range(length))
+    return "".join(secrets.choice(allowed_chars) for i in range(length))
 
 
 def _get_new_csrf_token(expires_in=None):
     csrf_serializer = _get_csrf_serializer(expires_in=expires_in)
     encoded_token = csrf_serializer.dumps(
         _get_random_string(
-            current_app.config['CSRF_TOKEN_LENGTH'],
-            current_app.config['CSRF_ALLOWED_CHARS'],
+            current_app.config["CSRF_TOKEN_LENGTH"],
+            current_app.config["CSRF_ALLOWED_CHARS"],
         )
     )
     return encoded_token
@@ -74,8 +71,7 @@ def _get_new_csrf_token(expires_in=None):
 
 def _get_csrf_token():
     try:
-        csrf_cookie = request.cookies[
-            current_app.config['CSRF_COOKIE_NAME']]
+        csrf_cookie = request.cookies[current_app.config["CSRF_COOKIE_NAME"]]
     except KeyError:
         return None
     return _decode_csrf(csrf_cookie)
@@ -86,13 +82,14 @@ def _decode_csrf(data):
     try:
         return csrf_serializer.loads(data)
     except SignatureExpired as e:
-        grace_period = timedelta(
-                seconds=current_app.config['CSRF_TOKEN_GRACE_PERIOD'])
+        grace_period = timedelta(seconds=current_app.config["CSRF_TOKEN_GRACE_PERIOD"])
         # Because we support ItsDangerous 1.X and 2.X we need to compute the
         # appropriately-timezone-aware-or-naive datetime. See
         # https://github.com/pallets/itsdangerous/blob/1.0.x/src/itsdangerous/jws.py#L212  # noqa
         # https://github.com/pallets/itsdangerous/blob/2.0.x/src/itsdangerous/jws.py#L244  # noqa
-        now = datetime.now(tz=timezone.utc) if e.date_signed.tzinfo else datetime.utcnow()  # noqa
+        now = (
+            datetime.now(tz=timezone.utc) if e.date_signed.tzinfo else datetime.utcnow()
+        )  # noqa
         if e.date_signed < now - grace_period:
             # Grace period for token rotation exceeded.
             _abort400(REASON_TOKEN_EXPIRED)
@@ -106,25 +103,26 @@ def _decode_csrf(data):
 
 def _set_token(response):
     response.set_cookie(
-        current_app.config['CSRF_COOKIE_NAME'],
+        current_app.config["CSRF_COOKIE_NAME"],
         _get_new_csrf_token(),
         max_age=current_app.config.get(
             # 1 week for cookie (but we rotate the token every day)
-            'CSRF_COOKIE_MAX_AGE', 60*60*24*7),
+            "CSRF_COOKIE_MAX_AGE",
+            60 * 60 * 24 * 7,
+        ),
         domain=current_app.config.get(
-            'CSRF_COOKIE_DOMAIN',
-            current_app.session_interface.get_cookie_domain(
-                current_app)),
-        path=current_app.session_interface.get_cookie_path(
-                current_app),
-        secure=current_app.config.get('SESSION_COOKIE_SECURE', True),
+            "CSRF_COOKIE_DOMAIN",
+            current_app.session_interface.get_cookie_domain(current_app),
+        ),
+        path=current_app.session_interface.get_cookie_path(current_app),
+        secure=current_app.config.get("SESSION_COOKIE_SECURE", True),
         httponly=False,
-        samesite=current_app.config['CSRF_COOKIE_SAMESITE'],
+        samesite=current_app.config["CSRF_COOKIE_SAMESITE"],
     )
 
 
 def _get_submitted_csrf_token():
-    header_name = current_app.config['CSRF_HEADER']
+    header_name = current_app.config["CSRF_HEADER"]
     csrf_token = request.headers.get(header_name)
     if csrf_token:
         return csrf_token
@@ -132,8 +130,9 @@ def _get_submitted_csrf_token():
 
 
 def _is_referer_secure(referer):
-    return 'https' in referer.scheme or \
-        not current_app.config['CSRF_FORCE_SECURE_REFERER']
+    return (
+        "https" in referer.scheme or not current_app.config["CSRF_FORCE_SECURE_REFERER"]
+    )
 
 
 def _abort400(reason):
@@ -150,15 +149,16 @@ def csrf_validate():
 
         referer = urlparse(referer)
         # Make sure we have a valid URL for Referer.
-        if '' in (referer.scheme, referer.netloc):
+        if "" in (referer.scheme, referer.netloc):
             return _abort400(REASON_MALFORMED_REFERER)
 
         # Ensure that our Referer is also secure.
         if not _is_referer_secure(referer):
             return _abort400(REASON_INSECURE_REFERER)
 
-        is_hostname_allowed = referer.hostname in \
-            current_app.config.get('APP_ALLOWED_HOSTS')
+        is_hostname_allowed = referer.hostname in current_app.config.get(
+            "APP_ALLOWED_HOSTS"
+        )
         if not is_hostname_allowed:
             reason = REASON_BAD_REFERER % referer.geturl()
             return _abort400(reason)
@@ -182,7 +182,7 @@ def reset_token():
     request.csrf_cookie_needs_reset = True
 
 
-class CSRFTokenMiddleware():
+class CSRFTokenMiddleware:
     """CSRF Token Middleware."""
 
     def __init__(self, app=None):
@@ -198,41 +198,40 @@ class CSRFTokenMiddleware():
 
         :param app: An instance of :class:`flask.Flask`.
         """
-        app.config.setdefault('CSRF_COOKIE_NAME', 'csrftoken')
-        app.config.setdefault('CSRF_HEADER', 'X-CSRFToken')
+        app.config.setdefault("CSRF_COOKIE_NAME", "csrftoken")
+        app.config.setdefault("CSRF_HEADER", "X-CSRFToken")
+        app.config.setdefault("CSRF_METHODS", ["POST", "PUT", "PATCH", "DELETE"])
+        app.config.setdefault("CSRF_TOKEN_LENGTH", 32)
         app.config.setdefault(
-            'CSRF_METHODS', ['POST', 'PUT', 'PATCH', 'DELETE'])
-        app.config.setdefault('CSRF_TOKEN_LENGTH', 32)
+            "CSRF_ALLOWED_CHARS", string.ascii_letters + string.digits
+        )
+        app.config.setdefault("CSRF_SECRET_SALT", "invenio-csrf-token")
+        app.config.setdefault("CSRF_FORCE_SECURE_REFERER", True)
         app.config.setdefault(
-            'CSRF_ALLOWED_CHARS', string.ascii_letters + string.digits)
-        app.config.setdefault('CSRF_SECRET_SALT', 'invenio-csrf-token')
-        app.config.setdefault('CSRF_FORCE_SECURE_REFERER', True)
-        app.config.setdefault(
-            'CSRF_COOKIE_SAMESITE',
-            app.config.get('SESSION_COOKIE_SAMESITE') or 'Lax')
+            "CSRF_COOKIE_SAMESITE", app.config.get("SESSION_COOKIE_SAMESITE") or "Lax"
+        )
         # The token last for 24 hours, but the cookie for 7 days. This allows
         # us to implement transparent token rotation during those 7 days. Note,
         # that the token is automatically rotated on login, thus you can also
         # change PERMANENT_SESSION_LIFETIME
-        app.config.setdefault('CSRF_TOKEN_EXPIRES_IN', 60*60*24)
+        app.config.setdefault("CSRF_TOKEN_EXPIRES_IN", 60 * 60 * 24)
         # We allow usage of an expired CSRF token during this period. This way
         # we can rotate the CSRF token without the user getting an CSRF error.
         # Align with CSRF_COOKIE_MAX_AGE
-        app.config.setdefault('CSRF_TOKEN_GRACE_PERIOD', 60*60*24*7)
+        app.config.setdefault("CSRF_TOKEN_GRACE_PERIOD", 60 * 60 * 24 * 7)
 
         @app.after_request
         def csrf_send(response):
-            is_method_vulnerable = request.method in app.config['CSRF_METHODS']
-            cookie_needs_reset = getattr(
-                request, 'csrf_cookie_needs_reset', False)
-            cookie_is_missing = current_app.config['CSRF_COOKIE_NAME'] not in \
-                request.cookies
-            if (is_method_vulnerable and cookie_is_missing) \
-                    or cookie_needs_reset:
+            is_method_vulnerable = request.method in app.config["CSRF_METHODS"]
+            cookie_needs_reset = getattr(request, "csrf_cookie_needs_reset", False)
+            cookie_is_missing = (
+                current_app.config["CSRF_COOKIE_NAME"] not in request.cookies
+            )
+            if (is_method_vulnerable and cookie_is_missing) or cookie_needs_reset:
                 _set_token(response)
             return response
 
-        app.extensions['invenio-csrf'] = self
+        app.extensions["invenio-csrf"] = self
 
 
 class CSRFProtectMiddleware(CSRFTokenMiddleware):
@@ -263,19 +262,19 @@ class CSRFProtectMiddleware(CSRFTokenMiddleware):
             for func in self._before_protect_funcs:
                 func()
 
-            is_method_vulnerable = request.method in app.config['CSRF_METHODS']
+            is_method_vulnerable = request.method in app.config["CSRF_METHODS"]
             if not is_method_vulnerable:
                 return
 
             if request.blueprint in self._exempt_blueprints:
                 return
 
-            if hasattr(request, 'skip_csrf_check'):
+            if hasattr(request, "skip_csrf_check"):
                 return
 
             view = app.view_functions.get(request.endpoint)
             if view:
-                dest = '{0}.{1}'.format(view.__module__, view.__name__)
+                dest = "{0}.{1}".format(view.__module__, view.__name__)
                 if dest in self._exempt_views:
                     return
 
@@ -298,7 +297,7 @@ class CSRFProtectMiddleware(CSRFTokenMiddleware):
         if isinstance(view, string_types):
             view_location = view
         else:
-            view_location = '.'.join((view.__module__, view.__name__))
+            view_location = ".".join((view.__module__, view.__name__))
 
         self._exempt_views.add(view_location)
         return view

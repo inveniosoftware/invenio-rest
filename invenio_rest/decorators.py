@@ -24,11 +24,14 @@ def require_content_types(*allowed_content_types):
     :raises invenio_rest.errors.InvalidContentType: It's rised if a content
         type not allowed is required.
     """
+
     def decorator(f):
         @wraps(f)
         def inner(*args, **kwargs):
             if request.mimetype not in allowed_content_types:
                 raise InvalidContentType(allowed_content_types)
             return f(*args, **kwargs)
+
         return inner
+
     return decorator

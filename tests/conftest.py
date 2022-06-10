@@ -31,16 +31,16 @@ def instance_path():
 @pytest.fixture()
 def base_app(instance_path):
     """Flask application fixture."""
-    app_ = Flask('testapp', instance_path=instance_path)
+    app_ = Flask("testapp", instance_path=instance_path)
     app_.config.update(
-        SECRET_KEY='SECRET_KEY',
+        SECRET_KEY="SECRET_KEY",
         TESTING=True,
         REST_CSRF_ENABLED=False,
     )
 
-    @app_.route('/ping')
+    @app_.route("/ping")
     def ping():
-        return 'ping'
+        return "ping"
 
     return app_
 
@@ -57,9 +57,9 @@ def csrf_app(base_app):
     """Flask application fixture with csrf enabled."""
     InvenioREST(base_app)
 
-    @base_app.route('/csrf-protected', methods=["POST"])
+    @base_app.route("/csrf-protected", methods=["POST"])
     def csrf_test():
-        return 'test'
+        return "test"
 
     with base_app.app_context():
         yield base_app
@@ -73,6 +73,7 @@ def csrf(csrf_app):
     like that it is not cleared after every test fuction run.
     """
     from invenio_rest.csrf import CSRFProtectMiddleware
+
     csrf = CSRFProtectMiddleware(csrf_app)
-    assert 'invenio-csrf' in csrf_app.extensions
+    assert "invenio-csrf" in csrf_app.extensions
     yield csrf

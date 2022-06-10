@@ -33,7 +33,7 @@ class FieldError(object):
         """
         self.res = dict(field=field, message=message)
         if code:
-            self.res['code'] = code
+            self.res["code"] = code
 
     def to_dict(self):
         """Convert to dictionary.
@@ -75,16 +75,16 @@ class RESTException(HTTPException):
 
         errors = self.get_errors()
         if self.errors:
-            body['errors'] = errors
+            body["errors"] = errors
 
-        if self.code and (self.code >= 500) and hasattr(g, 'sentry_event_id'):
-            body['error_id'] = str(g.sentry_event_id)
+        if self.code and (self.code >= 500) and hasattr(g, "sentry_event_id"):
+            body["error_id"] = str(g.sentry_event_id)
 
         return json.dumps(body)
 
     def get_headers(self, environ=None, scope=None):
         """Get a list of headers."""
-        return [('Content-Type', 'application/json')]
+        return [("Content-Type", "application/json")]
 
 
 class InvalidContentType(RESTException):
@@ -97,9 +97,9 @@ class InvalidContentType(RESTException):
         """Initialize exception."""
         super(InvalidContentType, self).__init__(**kwargs)
         self.allowed_content_types = allowed_content_types
-        self.description = \
-            "Invalid 'Content-Type' header. Expected one of: {0}".format(
-                ", ".join(allowed_content_types))
+        self.description = "Invalid 'Content-Type' header. Expected one of: {0}".format(
+            ", ".join(allowed_content_types)
+        )
 
 
 class RESTValidationError(RESTException):
@@ -108,7 +108,7 @@ class RESTValidationError(RESTException):
     code = 400
     """HTTP Status code."""
 
-    description = 'Validation error.'
+    description = "Validation error."
     """Error description."""
 
 
@@ -118,7 +118,7 @@ class RESTCSRFError(RESTException):
     code = 400
     """HTTP Status code."""
 
-    description = 'CSRF error.'
+    description = "CSRF error."
     """Error description."""
 
 
@@ -132,7 +132,7 @@ class SameContentException(RESTException):
     code = 304
     """HTTP Status code."""
 
-    description = 'Same Content.'
+    description = "Same Content."
     """Error description."""
 
     def __init__(self, etag, last_modified=None, **kwargs):
@@ -147,12 +147,10 @@ class SameContentException(RESTException):
 
     def get_response(self, environ=None, scope=None):
         """Get a list of headers."""
-        response = super(SameContentException, self).get_response(
-            environ=environ
-        )
+        response = super(SameContentException, self).get_response(environ=environ)
         response.cache_control.no_cache = True
         if self.etag is not None:
             response.set_etag(self.etag)
         if self.last_modified is not None:
-            response.headers['Last-Modified'] = http_date(self.last_modified)
+            response.headers["Last-Modified"] = http_date(self.last_modified)
         return response
