@@ -313,7 +313,7 @@ texinfo_documents = [
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
     "Flask": ("https://flask.palletsprojects.com", None),
-    "werkzeug": ("http://werkzeug.pocoo.org/docs/0.14", None),
+    "werkzeug": ("https://werkzeug.palletsprojects.com/", None),
 }
 
 # Autodoc configuraton.
