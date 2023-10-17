@@ -125,6 +125,8 @@ def test_csrf_exempt(csrf_app, csrf):
         )
         assert res.status_code == 200
 
+
+def test_csrf_exempt_dec(csrf_app, csrf):
     # Test `exempt` as a decorator on a view
     @csrf_app.route("/another-csrf-protect", methods=["POST"])
     @csrf.exempt
@@ -139,6 +141,8 @@ def test_csrf_exempt(csrf_app, csrf):
         )
         assert res.status_code == 200
 
+
+def test_csrf_exempt_bp(csrf_app, csrf):
     # Test `exempt` as a decorator on a blueprint
     blueprint = Blueprint("test_csrf_bp", __name__, url_prefix="")
 
