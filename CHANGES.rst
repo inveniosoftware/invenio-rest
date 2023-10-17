@@ -9,6 +9,10 @@
 Changes
 =======
 
+Version 1.3.0 (released 2023-10-17)
+
+- Fixed sentry error id.
+
 Version 1.2.8 (released 2022-01-13)
 
 - Add support for ItsDangerous <2.1 (datetime aware/naive of date_signed)
