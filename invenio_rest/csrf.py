@@ -141,6 +141,18 @@ def _abort400(reason):
 
 def csrf_validate():
     """Check CSRF cookie against request headers."""
+    # If the cookie is not set, we don't need to check anything.
+    if not request.cookies:
+        return
+    
+    csrf_token = _get_csrf_token()
+    if csrf_token is None:
+        return _abort400(REASON_NO_CSRF_COOKIE)
+
+    request_csrf_token = _get_submitted_csrf_token()
+    if not request_csrf_token:
+        _abort400(REASON_BAD_TOKEN)
+    
     if request.is_secure:
         referer = request.referrer
 
@@ -162,14 +174,6 @@ def csrf_validate():
         if not is_hostname_allowed:
             reason = REASON_BAD_REFERER % referer.geturl()
             return _abort400(reason)
-
-    csrf_token = _get_csrf_token()
-    if csrf_token is None:
-        return _abort400(REASON_NO_CSRF_COOKIE)
-
-    request_csrf_token = _get_submitted_csrf_token()
-    if not request_csrf_token:
-        _abort400(REASON_BAD_TOKEN)
 
     decoded_request_csrf_token = _decode_csrf(request_csrf_token)
 
