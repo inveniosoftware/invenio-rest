@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015-2018 CERN.
+# Copyright (C) 2015-2024 CERN.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -20,7 +20,6 @@ from invenio_rest.csrf import (
     REASON_BAD_TOKEN,
     REASON_INSECURE_REFERER,
     REASON_MALFORMED_REFERER,
-    REASON_NO_CSRF_COOKIE,
     REASON_NO_REFERER,
     CSRFProtectMiddleware,
     _get_new_csrf_token,
@@ -55,13 +54,19 @@ def test_csrf_disabled(csrf_app):
 def test_csrf_enabled(csrf_app, csrf):
     """Test CSRF enabled."""
     with csrf_app.test_client() as client:
+        # First request to set the cookie
+        res = client.post(
+            "/csrf-protected",
+            data=json.dumps(dict(foo="bar")),
+            content_type="application/json",
+        )
         # obtain a token
         res = client.post(
             "/csrf-protected",
             data=json.dumps(dict(foo="bar")),
             content_type="application/json",
         )
-        assert res.json["message"] == REASON_NO_CSRF_COOKIE
+        assert res.json["message"] == REASON_BAD_TOKEN
         assert res.status_code == 400
 
         # don't send the token
@@ -177,12 +182,18 @@ def test_csrf_exempt_bp(csrf_app, csrf):
 def test_skip_csrf_check(csrf_app, csrf):
     """Test skipping CSRF check."""
     with csrf_app.test_client() as client:
+        # First request to set the cookie
         res = client.post(
             "/csrf-protected",
             data=json.dumps(dict(foo="bar")),
             content_type="application/json",
         )
-        assert res.json["message"] == REASON_NO_CSRF_COOKIE
+        res = client.post(
+            "/csrf-protected",
+            data=json.dumps(dict(foo="bar")),
+            content_type="application/json",
+        )
+        assert res.json["message"] == REASON_BAD_TOKEN
         assert res.status_code == 400
 
         @csrf.before_csrf_protect
@@ -281,11 +292,26 @@ def test_csrf_token_rotation(csrf_app, csrf):
 def test_csrf_no_referer(csrf_app, csrf):
     """Test CSRF no referrer in a secure request."""
     with csrf_app.test_client() as client:
+        # First request to set the cookie
+        res = client.post(
+            "/csrf-protected",
+            data=json.dumps(dict(foo="bar")),
+            content_type="application/json",
+        )
+        # send the token to reach the CSRF check
+        CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
+        CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
+
+        cookie = next(
+            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
+            None,
+        )
         res = client.post(
             "/csrf-protected",
             base_url="https://localhost",
             data=json.dumps(dict(foo="bar")),
             content_type="application/json",
+            headers={CSRF_HEADER_NAME: cookie.value},
         )
         assert res.json["message"] == REASON_NO_REFERER
         assert res.status_code == 400
@@ -294,12 +320,26 @@ def test_csrf_no_referer(csrf_app, csrf):
 def test_csrf_malformed_referer(csrf_app, csrf):
     """Test CSRF malformed referrer in a secure request."""
     with csrf_app.test_client() as client:
+        # First request to set the cookie
+        res = client.post(
+            "/csrf-protected",
+            data=json.dumps(dict(foo="bar")),
+            content_type="application/json",
+        )
+        # send the token to reach the CSRF check
+        CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
+        CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
+
+        cookie = next(
+            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
+            None,
+        )
         res = client.post(
             "/csrf-protected",
             base_url="https://localhost",
             data=json.dumps(dict(foo="bar")),
             content_type="application/json",
-            headers={"Referer": "bad-referer"},
+            headers={CSRF_HEADER_NAME: cookie.value, "Referer": "bad-referer"},
         )
         assert res.json["message"] == REASON_MALFORMED_REFERER
         assert res.status_code == 400
@@ -308,12 +348,29 @@ def test_csrf_malformed_referer(csrf_app, csrf):
 def test_csrf_insecure_referer(csrf_app, csrf):
     """Test CSRF insecure referrer in a secure request."""
     with csrf_app.test_client() as client:
+        # First request to set the cookie
+        res = client.post(
+            "/csrf-protected",
+            data=json.dumps(dict(foo="bar")),
+            content_type="application/json",
+        )
+        # send the token to reach the CSRF check
+        CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
+        CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
+
+        cookie = next(
+            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
+            None,
+        )
         res = client.post(
             "/csrf-protected",
             base_url="https://localhost",
             data=json.dumps(dict(foo="bar")),
             content_type="application/json",
-            headers={"Referer": "http://insecure-referer"},
+            headers={
+                CSRF_HEADER_NAME: cookie.value,
+                "Referer": "http://insecure-referer",
+            },
         )
         assert res.json["message"] == REASON_INSECURE_REFERER
         assert res.status_code == 400
@@ -322,6 +379,20 @@ def test_csrf_insecure_referer(csrf_app, csrf):
 def test_csrf_bad_referer(csrf_app, csrf):
     """Test CSRF bad referrer in a secure request."""
     with csrf_app.test_client() as client:
+        # First request to set the cookie
+        res = client.post(
+            "/csrf-protected",
+            data=json.dumps(dict(foo="bar")),
+            content_type="application/json",
+        )
+        # send the token to reach the CSRF check
+        CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
+        CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
+
+        cookie = next(
+            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
+            None,
+        )
         csrf_app.config["APP_ALLOWED_HOSTS"] = ["allowed-referer"]
         not_allowed_referer = "https://not-allowed-referer"
         res = client.post(
@@ -329,7 +400,7 @@ def test_csrf_bad_referer(csrf_app, csrf):
             base_url="https://localhost",
             data=json.dumps(dict(foo="bar")),
             content_type="application/json",
-            headers={"Referer": not_allowed_referer},
+            headers={CSRF_HEADER_NAME: cookie.value, "Referer": not_allowed_referer},
         )
         assert res.json["message"] == REASON_BAD_REFERER % not_allowed_referer
         assert res.status_code == 400
