@@ -24,8 +24,6 @@ from itsdangerous import BadSignature, SignatureExpired, TimedJSONWebSignatureSe
 from six import string_types
 from six.moves.urllib.parse import urlparse
 
-from .errors import RESTCSRFError
-
 REASON_NO_REFERER = "Referer checking failed - no Referer."
 REASON_BAD_REFERER = "Referer checking failed - %s does not match any trusted origins."
 REASON_NO_CSRF_COOKIE = "CSRF cookie not set."
@@ -144,7 +142,7 @@ def csrf_validate():
     # If the cookie is not set, we don't need to check anything.
     if not request.cookies:
         return
-    
+
     csrf_token = _get_csrf_token()
     if csrf_token is None:
         return _abort400(REASON_NO_CSRF_COOKIE)
@@ -152,10 +150,9 @@ def csrf_validate():
     request_csrf_token = _get_submitted_csrf_token()
     if not request_csrf_token:
         _abort400(REASON_BAD_TOKEN)
-    
+
     if request.is_secure:
         referer = request.referrer
-
         if referer is None:
             return _abort400(REASON_NO_REFERER)
 

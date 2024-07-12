@@ -36,6 +36,11 @@ extensions = [
     "sphinx.ext.viewcode",
 ]
 
+# Temporal fix, due to a bug on sphinx
+nitpick_ignore = [
+    ("py:class", "t.Optional"),
+]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
