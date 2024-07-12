@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015-2018 CERN.
+# Copyright (C) 2015-2024 CERN.
 # Copyright (C) 2021      TU Wien.
 #
 # Invenio is free software; you can redistribute it and/or modify it
@@ -12,6 +12,7 @@
 from __future__ import absolute_import, print_function
 
 import json
+import typing as t  # Required for tests to pass
 
 from flask import g
 from werkzeug.exceptions import HTTPException
@@ -109,16 +110,6 @@ class RESTValidationError(RESTException):
     """HTTP Status code."""
 
     description = "Validation error."
-    """Error description."""
-
-
-class RESTCSRFError(RESTException):
-    """A standard REST validation error."""
-
-    code = 400
-    """HTTP Status code."""
-
-    description = "CSRF error."
     """Error description."""
 
 
