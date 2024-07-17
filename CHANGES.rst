@@ -9,6 +9,10 @@
 Changes
 =======
 
+Version 1.3.1 (released 2024-07-17)
+
+- csrf: improve token validation workflow
+
 Version 1.3.0 (released 2023-10-17)
 
 - Fixed sentry error id.
