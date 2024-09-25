@@ -3,6 +3,7 @@
 # This file is part of Invenio.
 # Copyright (C) 2020 CERN.
 # Copyright (C) 2022 Northwestern University.
+# Copyright (C) 2023-2024 Graz University of Technology.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -18,11 +19,10 @@ import re
 import secrets
 import string
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse
 
 from flask import Blueprint, abort, current_app, request
 from itsdangerous import BadSignature, SignatureExpired, TimedJSONWebSignatureSerializer
-from six import string_types
-from six.moves.urllib.parse import urlparse
 
 REASON_NO_REFERER = "Referer checking failed - no Referer."
 REASON_BAD_REFERER = "Referer checking failed - %s does not match any trusted origins."
@@ -295,7 +295,7 @@ class CSRFProtectMiddleware(CSRFTokenMiddleware):
             self._exempt_blueprints.add(view.name)
             return view
 
-        if isinstance(view, string_types):
+        if isinstance(view, str):
             view_location = view
         else:
             view_location = ".".join((view.__module__, view.__name__))
