@@ -109,7 +109,7 @@ def _decode_csrf(data):
 def _set_token(response):
     response.set_cookie(
         current_app.config["CSRF_COOKIE_NAME"],
-        _get_new_csrf_token(),
+        _get_new_csrf_token().decode("utf-8"),
         max_age=current_app.config.get(
             # 1 week for cookie (but we rotate the token every day)
             "CSRF_COOKIE_MAX_AGE",
