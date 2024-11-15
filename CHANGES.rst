@@ -9,6 +9,12 @@
 Changes
 =======
 
+Version 1.4.0 (released 2024-11-19)
+
+- global: remove six usage
+- global: use jws from invenio-base
+- fix: forward compatibility with flask>=3.0
+
 Version 1.3.1 (released 2024-07-17)
 
 - csrf: improve token validation workflow
