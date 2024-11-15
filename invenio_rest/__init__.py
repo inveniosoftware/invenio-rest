@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2018 CERN.
+# Copyright (C) 2024 Graz University of Technology.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -195,6 +196,6 @@ from .csrf import csrf
 from .ext import InvenioREST
 from .views import ContentNegotiatedMethodView
 
-__version__ = "1.3.1"
+__version__ = "1.4.0"
 
 __all__ = ("__version__", "csrf", "InvenioREST", "ContentNegotiatedMethodView")
