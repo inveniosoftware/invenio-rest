@@ -24,7 +24,7 @@ def test_serialize_pretty(app):
         title = fields.Str(attribute="title")
 
     data = {"title": "test"}
-    assert (TestSchema().dump(data)).data == {"title": "test"}
+    assert (TestSchema().dump(data)) == {"title": "test"}
 
 
 def test_marshmallow_compatibility():
@@ -37,13 +37,10 @@ def test_marshmallow_compatibility():
     wrapped = result_wrapper(dict_result)
 
     assert wrapped == dict_result
-    assert wrapped.data == dict_result
 
     wrapped = result_wrapper(list_result)
     assert wrapped == list_result
-    assert wrapped.data == list_result
 
     wrapped = result_wrapper(tuple_result)
     assert wrapped == tuple_result
     assert isinstance(wrapped, tuple)
-    assert tuple_result.data == dict_result
