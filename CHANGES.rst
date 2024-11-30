@@ -10,6 +10,10 @@
 Changes
 =======
 
+Version 1.4.2 (release 2024-11-30)
+
+- fix: no translation
+
 Version 1.4.1 (release 2024-11-30)
 
 - setup: change to reusable workflows
