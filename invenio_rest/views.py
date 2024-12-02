@@ -13,12 +13,16 @@ from __future__ import absolute_import, print_function
 
 from datetime import timezone
 
-import sentry_sdk
 from flask import Response, abort, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
 from werkzeug.exceptions import HTTPException
 
 from .errors import RESTException, SameContentException
+
+try:
+    import sentry_sdk
+except ImportError:
+    sentry_sdk = None
 
 
 def create_api_errorhandler(**kwargs):
@@ -40,7 +44,7 @@ def create_api_errorhandler(**kwargs):
             return e.get_response()
         elif isinstance(e, HTTPException) and e.description:
             kwargs["message"] = e.description
-        if kwargs.get("status", 400) >= 500:
+        if kwargs.get("status", 400) >= 500 and sentry_sdk is not None:
             sentry_event_id = sentry_sdk.last_event_id()
             if sentry_event_id:
                 kwargs["error_id"] = str(sentry_event_id)
