@@ -10,6 +10,11 @@
 Changes
 =======
 
+Version v1.5.0 (released 2024-12-02)
+
+- global: make sentry-sdk optional
+    * Import-detects `sentry_sdk` so that we can remove the hard dependency.
+
 Version 1.4.2 (release 2024-11-30)
 
 - fix: no translation
