@@ -82,10 +82,8 @@ def test_csrf_enabled(csrf_app, csrf):
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
 
-        cookie = next(
-            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
-            None,
-        )
+        cookie = client.get_cookie(CSRF_COOKIE_NAME)
+
         res = client.post(
             "/csrf-protected",
             data=json.dumps(dict(foo="bar")),
@@ -95,10 +93,8 @@ def test_csrf_enabled(csrf_app, csrf):
         assert res.status_code == 200
 
         # The CSRF token should not have changed.
-        new_cookie = next(
-            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
-            None,
-        )
+        new_cookie = client.get_cookie(CSRF_COOKIE_NAME)
+
         assert cookie.value == new_cookie.value
 
 
@@ -246,7 +242,7 @@ def test_csrf_token_rotation(csrf_app, csrf):
         # Token in grace period - succeeds but token gets rotated
         expired_token = _get_new_csrf_token(expires_in=-1)
         client.set_cookie(CSRF_COOKIE_NAME, expired_token, domain="localhost")
-        old_cookie = {cookie.name: cookie for cookie in client.cookie_jar}["csrftoken"]
+        old_cookie = client.get_cookie(CSRF_COOKIE_NAME)
         res = client.post(
             "/csrf-protected",
             data=json.dumps(dict(foo="bar")),
@@ -255,7 +251,7 @@ def test_csrf_token_rotation(csrf_app, csrf):
         )
         assert res.status_code == 200
         # Token was rotated and new requests succeeds
-        new_cookie = {cookie.name: cookie for cookie in client.cookie_jar}["csrftoken"]
+        new_cookie = client.get_cookie(CSRF_COOKIE_NAME)
         assert new_cookie.value != old_cookie.value
         res = client.post(
             "/csrf-protected",
@@ -271,7 +267,7 @@ def test_csrf_token_rotation(csrf_app, csrf):
             content_type="application/json",
             headers={CSRF_HEADER_NAME: new_cookie.value},
         )
-        last_cookie = {cookie.name: cookie for cookie in client.cookie_jar}["csrftoken"]
+        last_cookie = client.get_cookie(CSRF_COOKIE_NAME)
         assert new_cookie.value == last_cookie.value
         assert res.status_code == 200
 
@@ -302,10 +298,8 @@ def test_csrf_no_referer(csrf_app, csrf):
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
 
-        cookie = next(
-            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
-            None,
-        )
+        cookie = client.get_cookie(CSRF_COOKIE_NAME)
+
         res = client.post(
             "/csrf-protected",
             base_url="https://localhost",
@@ -330,10 +324,8 @@ def test_csrf_malformed_referer(csrf_app, csrf):
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
 
-        cookie = next(
-            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
-            None,
-        )
+        cookie = client.get_cookie(CSRF_COOKIE_NAME)
+
         res = client.post(
             "/csrf-protected",
             base_url="https://localhost",
@@ -358,10 +350,8 @@ def test_csrf_insecure_referer(csrf_app, csrf):
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
 
-        cookie = next(
-            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
-            None,
-        )
+        cookie = client.get_cookie(CSRF_COOKIE_NAME)
+
         res = client.post(
             "/csrf-protected",
             base_url="https://localhost",
@@ -389,10 +379,8 @@ def test_csrf_bad_referer(csrf_app, csrf):
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
 
-        cookie = next(
-            (cookie for cookie in client.cookie_jar if cookie.name == CSRF_COOKIE_NAME),
-            None,
-        )
+        cookie = client.get_cookie(CSRF_COOKIE_NAME)
+
         csrf_app.config["APP_ALLOWED_HOSTS"] = ["allowed-referer"]
         not_allowed_referer = "https://not-allowed-referer"
         res = client.post(
