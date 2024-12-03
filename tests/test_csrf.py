@@ -222,7 +222,9 @@ def test_csrf_not_signed_correctly(csrf_app, csrf):
         malicious_cookie = csrf_serializer.dumps({"user": "malicious"}, "my_secret")
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
-        client.set_cookie("localhost", CSRF_COOKIE_NAME, malicious_cookie)
+        client.set_cookie(
+            CSRF_COOKIE_NAME, malicious_cookie, domain="localhost"
+        )
 
         res = client.post(
             "/csrf-protected",
@@ -243,7 +245,7 @@ def test_csrf_token_rotation(csrf_app, csrf):
 
         # Token in grace period - succeeds but token gets rotated
         expired_token = _get_new_csrf_token(expires_in=-1)
-        client.set_cookie("localhost", CSRF_COOKIE_NAME, expired_token)
+        client.set_cookie(CSRF_COOKIE_NAME, expired_token, domain="localhost")
         old_cookie = {cookie.name: cookie for cookie in client.cookie_jar}["csrftoken"]
         res = client.post(
             "/csrf-protected",
@@ -277,7 +279,7 @@ def test_csrf_token_rotation(csrf_app, csrf):
         # - Hack to have a negative grace period to force the error.
         csrf_app.config["CSRF_TOKEN_GRACE_PERIOD"] = -10000
         expired_token = _get_new_csrf_token(expires_in=-60 * 60 * 24 * 14)
-        client.set_cookie("localhost", CSRF_COOKIE_NAME, expired_token)
+        client.set_cookie(CSRF_COOKIE_NAME, expired_token, domain="localhost")
         res = client.post(
             "/csrf-protected",
             data=json.dumps(dict(foo="bar")),
