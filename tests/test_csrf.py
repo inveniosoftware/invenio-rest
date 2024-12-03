@@ -219,7 +219,7 @@ def test_csrf_not_signed_correctly(csrf_app, csrf):
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
         client.set_cookie(
-            CSRF_COOKIE_NAME, malicious_cookie, domain="localhost"
+            CSRF_COOKIE_NAME, malicious_cookie.decode("utf-8"), domain="localhost"
         )
 
         res = client.post(
