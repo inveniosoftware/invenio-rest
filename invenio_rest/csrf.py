@@ -22,14 +22,8 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
 from flask import Blueprint, abort, current_app, request
+from invenio_base.jws import TimedJSONWebSignatureSerializer
 from itsdangerous import BadSignature, SignatureExpired
-
-try:
-    # itsdangerous < 2.1.0
-    from itsdangerous import TimedJSONWebSignatureSerializer
-except ImportError:
-    # itsdangerous >= 2.1.0
-    from invenio_base.jws import TimedJSONWebSignatureSerializer
 
 REASON_NO_REFERER = "Referer checking failed - no Referer."
 REASON_BAD_REFERER = "Referer checking failed - %s does not match any trusted origins."
