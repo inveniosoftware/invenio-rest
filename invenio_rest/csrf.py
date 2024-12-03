@@ -65,7 +65,7 @@ def _get_new_csrf_token(expires_in=None):
             current_app.config["CSRF_ALLOWED_CHARS"],
         )
     )
-    return encoded_token
+    return encoded_token.decode("utf-8")
 
 
 def _get_csrf_token():
@@ -103,7 +103,7 @@ def _decode_csrf(data):
 def _set_token(response):
     response.set_cookie(
         current_app.config["CSRF_COOKIE_NAME"],
-        _get_new_csrf_token().decode("utf-8"),
+        _get_new_csrf_token(),
         max_age=current_app.config.get(
             # 1 week for cookie (but we rotate the token every day)
             "CSRF_COOKIE_MAX_AGE",
