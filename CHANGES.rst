@@ -10,6 +10,16 @@
 Changes
 =======
 
+Version 2.0.0 (released 2024-12-03)
+
+- fix: set_cookie needs a str
+- fix: cookie_jar not in FlaskClient
+- tests: update api usage of set_cookie
+- fix: set_cookie needs a str
+- chore: remove unused imports
+- global: remove try except for jws
+- setup: bump major dependencies
+
 Version v1.5.0 (released 2024-12-02)
 
 - global: make sentry-sdk optional
