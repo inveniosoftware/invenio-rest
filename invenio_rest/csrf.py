@@ -15,7 +15,7 @@ about CSRF protection. For more information you can see here:
 <https://github.com/django/django/blob/master/django/middleware/csrf.py>
 """
 
-import re
+
 import secrets
 import string
 from datetime import datetime, timedelta, timezone

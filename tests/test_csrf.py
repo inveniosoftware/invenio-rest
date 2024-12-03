@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2024 CERN.
+# Copyright (C) 2024 Graz University of Technology.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -24,7 +25,6 @@ from invenio_rest.csrf import (
     CSRFProtectMiddleware,
     _get_new_csrf_token,
 )
-from invenio_rest.ext import InvenioREST
 
 
 def test_csrf_init():
@@ -237,8 +237,6 @@ def test_csrf_not_signed_correctly(csrf_app, csrf):
 
 def test_csrf_token_rotation(csrf_app, csrf):
     """Test CSRF token rotation."""
-    from itsdangerous import TimedJSONWebSignatureSerializer
-
     with csrf_app.test_client() as client:
         CSRF_COOKIE_NAME = csrf_app.config["CSRF_COOKIE_NAME"]
         CSRF_HEADER_NAME = csrf_app.config["CSRF_HEADER"]
