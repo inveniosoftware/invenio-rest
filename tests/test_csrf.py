@@ -381,7 +381,7 @@ def test_csrf_bad_referer(csrf_app, csrf):
 
         cookie = client.get_cookie(CSRF_COOKIE_NAME)
 
-        csrf_app.config["APP_ALLOWED_HOSTS"] = ["allowed-referer"]
+        csrf_app.config["TRUSTED_HOSTS"] = ["allowed-referer"]
         not_allowed_referer = "https://not-allowed-referer"
         res = client.post(
             "/csrf-protected",
