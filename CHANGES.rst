@@ -10,6 +10,10 @@
 Changes
 =======
 
+Version v2.0.1 (released 2025-02-24)
+
+- fix: flask changed from APP_ALLOWED_HOSTS to TRUSTED_HOSTS
+
 Version 2.0.0 (released 2024-12-03)
 
 - fix: set_cookie needs a str
