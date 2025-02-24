@@ -167,7 +167,7 @@ def csrf_validate():
             return _abort400(REASON_INSECURE_REFERER)
 
         is_hostname_allowed = referer.hostname in current_app.config.get(
-            "APP_ALLOWED_HOSTS"
+            "TRUSTED_HOSTS"
         )
         if not is_hostname_allowed:
             reason = REASON_BAD_REFERER % referer.geturl()
