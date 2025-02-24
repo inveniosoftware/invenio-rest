@@ -10,6 +10,10 @@
 Changes
 =======
 
+Version v2.0.2 (released 2025-02-24)
+
+- fix: copyright headers
+
 Version v2.0.1 (released 2025-02-24)
 
 - fix: flask changed from APP_ALLOWED_HOSTS to TRUSTED_HOSTS
