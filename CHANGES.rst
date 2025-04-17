@@ -10,6 +10,10 @@
 Changes
 =======
 
+Version v2.0.3 (released 2025-04-17)
+
+- installation: pin marshmallow to <4.0.0
+
 Version v2.0.2 (released 2025-02-24)
 
 - fix: copyright headers
