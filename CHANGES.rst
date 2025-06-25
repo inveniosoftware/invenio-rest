@@ -10,6 +10,11 @@
 Changes
 =======
 
+Version v1.5.2 (released 2025-06-25)
+
+- csrf: more flexible handling of APP_ALLOWED_HOSTS
+    * Fixes a bug where the CSRF middleware would crash if `APP_ALLOWED_HOSTS` was set to `None`.
+
 Version v1.5.1 (released 2025-04-29)
 
 - setup: pin dependency marshmallow
