@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2018 CERN.
+# Copyright (C) 2025 Graz University of Technology.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -13,9 +14,9 @@ from __future__ import absolute_import, print_function
 
 import json
 from datetime import datetime
+from importlib.metadata import distribution
 from urllib.parse import urlencode
 
-import pkg_resources
 import pytest
 from flask import Flask, abort, make_response, request
 from flask.json import jsonify
@@ -91,10 +92,7 @@ def test_error_handlers(app):
             for verb in verbs:
                 res = verb("/{0}".format(s))
                 assert res.status_code == s
-                if (
-                    pkg_resources.get_distribution("werkzeug").version == "0.14.1"
-                    and s == 412
-                ):
+                if distribution("werkzeug").version == "0.14.1" and s == 412:
                     # skip test because of the following issue:
                     # https://github.com/pallets/werkzeug/issues/1231
                     continue
