@@ -2,6 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2018 CERN.
+# Copyright (C) 2025 Graz University of Technology.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -11,8 +12,6 @@
 from __future__ import absolute_import, print_function
 
 import warnings
-
-import pkg_resources
 
 from . import config
 from .views import create_api_errorhandler
