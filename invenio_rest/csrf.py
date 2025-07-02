@@ -16,7 +16,6 @@ about CSRF protection. For more information you can see here:
 <https://github.com/django/django/blob/master/django/middleware/csrf.py>
 """
 
-
 import secrets
 import string
 from datetime import datetime, timedelta, timezone
@@ -167,12 +166,13 @@ def csrf_validate():
         if not _is_referer_secure(referer):
             return _abort400(REASON_INSECURE_REFERER)
 
-        is_hostname_allowed = referer.hostname in current_app.config.get(
-            "TRUSTED_HOSTS"
-        )
-        if not is_hostname_allowed:
-            reason = REASON_BAD_REFERER % referer.geturl()
-            return _abort400(reason)
+        # Handle TRUSTED_HOSTS is None
+        allowed_hosts = current_app.config.get("TRUSTED_HOSTS")
+        if allowed_hosts is not None:
+            is_hostname_allowed = referer.hostname in allowed_hosts
+            if not is_hostname_allowed:
+                reason = REASON_BAD_REFERER % referer.geturl()
+                return _abort400(reason)
 
     decoded_request_csrf_token = _decode_csrf(request_csrf_token)
 
