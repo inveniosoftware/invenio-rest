@@ -10,6 +10,10 @@
 Changes
 =======
 
+Version v2.0.5 (released 2025-07-15)
+
+- fix: support TRUSTED_HOST is None in csrf_validate
+
 Version v2.0.4 (released 2025-07-01)
 
 - fix: pkg_resources DeprecationWarning
