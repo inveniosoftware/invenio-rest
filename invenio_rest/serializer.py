@@ -8,8 +8,6 @@
 
 """REST API serializers."""
 
-import warnings
-
 from marshmallow import Schema
 
 
@@ -20,18 +18,6 @@ class MarshmalDict(dict):
         """Initialize MarshmalDict."""
         self.update(result)
 
-    @property
-    def data(self):
-        """Substituting data property for backwards compatibility."""
-        warnings.warn(
-            "Schema().dump().data and Schema().dump().errors "
-            "as well as Schema().load().data and Schema().loads().data"
-            "attributes are deprecated in marshmallow v3.x.",
-            category=PendingDeprecationWarning,
-            stacklevel=2,
-        )
-        return self
-
 
 class MarshmalList(list):
     """Wrapping class for result of type list."""
@@ -39,18 +25,6 @@ class MarshmalList(list):
     def __init__(self, result):
         """Initialize MarshmalList."""
         self.extend(result)
-
-    @property
-    def data(self):
-        """Substituting data property for backwards compatibility."""
-        warnings.warn(
-            "Schema().dump().data and Schema().dump().errors "
-            "as well as Schema().load().data and Schema().loads().data"
-            "attributes are deprecated in marshmallow v3.x.",
-            category=PendingDeprecationWarning,
-            stacklevel=2,
-        )
-        return self
 
 
 def result_wrapper(result):
