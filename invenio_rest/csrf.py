@@ -3,7 +3,7 @@
 # This file is part of Invenio.
 # Copyright (C) 2020 CERN.
 # Copyright (C) 2022 Northwestern University.
-# Copyright (C) 2023-2024 Graz University of Technology.
+# Copyright (C) 2023-2025 Graz University of Technology.
 # Copyright (C) 2025 University of Münster.
 #
 # Invenio is free software; you can redistribute it and/or modify it
@@ -87,7 +87,9 @@ def _decode_csrf(data):
         # https://github.com/pallets/itsdangerous/blob/1.0.x/src/itsdangerous/jws.py#L212  # noqa
         # https://github.com/pallets/itsdangerous/blob/2.0.x/src/itsdangerous/jws.py#L244  # noqa
         now = (
-            datetime.now(tz=timezone.utc) if e.date_signed.tzinfo else datetime.utcnow()
+            datetime.now(tz=timezone.utc)
+            if e.date_signed.tzinfo
+            else datetime.now(tz=timezone.utc).replace(tzinfo=None)
         )  # noqa
         if e.date_signed < now - grace_period:
             # Grace period for token rotation exceeded.

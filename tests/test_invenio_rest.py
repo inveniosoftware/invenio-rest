@@ -2,7 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2018 CERN.
-# Copyright (C) 2025 Graz University of Technology.
+# Copyright (C) 2025-2026 Graz University of Technology.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -13,7 +13,7 @@
 from __future__ import absolute_import, print_function
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from importlib.metadata import distribution
 from urllib.parse import urlencode
 
@@ -161,7 +161,7 @@ class _ObjectItem(ContentNegotiatedMethodView):
     def __init__(self, *args, **kwargs):
         """Constructor."""
         super(_ObjectItem, self).__init__(*args, **kwargs)
-        self.modified = datetime.utcnow()
+        self.modified = datetime.now(timezone.utc)
 
     def get(self, id, **kwargs):
         """GET a resource."""
