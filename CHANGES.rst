@@ -10,6 +10,10 @@
 Changes
 =======
 
+Version v3.0.1 (released 2026-03-12)
+
+- chore(setup): unpin webargs
+
 Version v3.0.0 (released 2026-01-27)
 
 - chore(setup): bump dependencies

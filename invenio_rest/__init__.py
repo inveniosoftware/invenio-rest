@@ -196,6 +196,6 @@ from .csrf import csrf
 from .ext import InvenioREST
 from .views import ContentNegotiatedMethodView
 
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 
 __all__ = ("__version__", "csrf", "InvenioREST", "ContentNegotiatedMethodView")
