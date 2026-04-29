@@ -66,45 +66,54 @@ def result_wrapper(result):
     return result
 
 
+def _init_context(kwargs):
+    """Init context_schema from kwargs only if context exists.
+
+    Nested calls can't provide context, therefor they inherit the open context.
+    """
+    if "context" in kwargs:
+        context = kwargs.pop("context")
+        token = context_schema.set(context)
+        return lambda: context_schema.reset(token)
+    else:
+        return lambda: None
+
+
 class BaseSchema(Schema):
     """Base schema for all serializations."""
 
     def dump(self, obj, *args, **kwargs):
         """Wrap dump result for backward compatibility."""
-        context = kwargs.pop("context", {})
-        token = context_schema.set(context)
+        clear_context = _init_context(kwargs)
         try:
             result = super(BaseSchema, self).dump(obj, **kwargs)
             return result_wrapper(result)
         finally:
-            context_schema.reset(token)
+            clear_context()
 
     def dumps(self, obj, *args, **kwargs):
         """Wrap dumps result for backward compatibility."""
-        context = kwargs.pop("context", {})
-        token = context_schema.set(context)
+        clear_context = _init_context(kwargs)
         try:
             result = super(BaseSchema, self).dumps(obj, *args, **kwargs)
             return result_wrapper(result)
         finally:
-            context_schema.reset(token)
+            clear_context()
 
     def load(self, obj, *args, **kwargs):
         """Wrap load result for backward compatibility."""
-        context = kwargs.pop("context", {})
-        token = context_schema.set(context)
+        clear_context = _init_context(kwargs)
         try:
             result = super(BaseSchema, self).load(obj, *args, **kwargs)
             return result_wrapper(result)
         finally:
-            context_schema.reset(token)
+            clear_context()
 
     def loads(self, obj, *args, **kwargs):
         """Wrap loads result for backward compatibility."""
-        context = kwargs.pop("context", {})
-        token = context_schema.set(context)
+        clear_context = _init_context(kwargs)
         try:
             result = super(BaseSchema, self).loads(obj, *args, **kwargs)
             return result_wrapper(result)
         finally:
-            context_schema.reset(token)
+            clear_context()

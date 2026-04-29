@@ -14,6 +14,7 @@ from __future__ import absolute_import, print_function
 from collections import namedtuple
 
 from marshmallow import fields
+from marshmallow_utils.context import context_schema
 
 from invenio_rest.serializer import BaseSchema, result_wrapper
 
@@ -48,3 +49,24 @@ def test_marshmallow_compatibility():
     assert wrapped == tuple_result
     assert isinstance(wrapped, tuple)
     assert tuple_result.data == dict_result
+
+
+def test_nested_schema_inherits_context():
+    """Nested BaseSchema must not overwrite the parent's context_schema."""
+
+    class Inner(BaseSchema):
+        name = fields.Method("get_name")
+
+        def get_name(self, obj):
+            return context_schema.get({}).get("name", "MISSING")
+
+    class Outer(BaseSchema):
+        inner = fields.Nested(Inner)
+        name = fields.Method("get_name")
+
+        def get_name(self, obj):
+            return context_schema.get({}).get("name", "MISSING")
+
+    result = Outer().dump({"inner": {}}, context={"name": "ctx"})
+    assert result["name"] == "ctx"
+    assert result["inner"]["name"] == "ctx"
