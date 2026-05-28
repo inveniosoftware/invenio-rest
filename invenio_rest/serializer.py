@@ -2,7 +2,7 @@
 #
 # This file is part of Invenio.
 # Copyright (C) 2015-2019 CERN.
-# Copyright (C) 2025 Graz University of Technology.
+# Copyright (C) 2025-2026 Graz University of Technology.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -76,7 +76,21 @@ def _init_context(kwargs):
         token = context_schema.set(context)
         return lambda: context_schema.reset(token)
     else:
-        return lambda: None
+        try:
+            # nested calls of schema methods
+            context_schema.get()
+            return lambda: None
+        except LookupError:
+            # situation if a context_schema.get() is used but e.g. dump is not
+            # called with a context parameter
+            warnings.warn(
+                "context_schema will in future only be set if and only if context is given.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+
+            token = context_schema.set({})
+            return lambda: context_schema.reset(token)
 
 
 class BaseSchema(Schema):
