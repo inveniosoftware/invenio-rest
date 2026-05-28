@@ -10,6 +10,11 @@
 Changes
 =======
 
+Version v3.0.2 (released 2026-05-28)
+
+- fix(context): wrong default value
+- fix(serializer): inherit context_schema in nested BaseSchema calls
+
 Version v3.0.1 (released 2026-03-12)
 
 - chore(setup): unpin webargs
