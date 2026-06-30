@@ -64,7 +64,7 @@ class ContentNegotiatedMethodView(MethodView):
         default_media_type=None,
         default_method_media_type=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """Register the serializing functions.
 
