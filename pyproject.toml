@@ -1,4 +1,76 @@
-[build-system]
-requires = ["setuptools", "wheel", "babel>2.8"]
-build-backend = "setuptools.build_meta"
+# SPDX-FileCopyrightText: 2015-2025 CERN.
+# SPDX-FileCopyrightText: 2022-2026 Graz University of Technology.
+# SPDX-FileCopyrightText: 2022 Northwestern University.
+# SPDX-FileCopyrightText: 2026 TU Wien.
+# SPDX-License-Identifier: MIT
 
+[project]
+name = "invenio-rest"
+description = "REST API module for Invenio."
+readme = "README.rst"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+  { name = "CERN", email = "info@inveniosoftware.org" },
+]
+keywords = [
+  "api",
+  "invenio",
+  "module",
+  "rest",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+]
+dependencies = [
+  "flask-cors>=2.1.0",
+  "invenio-base>=2.0.0,<3.0.0",
+  "invenio-logging>=4.0.0,<5.0.0",
+  "itsdangerous>=2.2.0",
+  "marshmallow>=2.15.2,<4.0.0",
+  "marshmallow-utils>=0.15.0,<1.0.0",
+  "webargs>=5.5.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Repository = "https://github.com/inveniosoftware/invenio-rest"
+
+[project.entry-points."invenio_base.api_apps"]
+invenio_rest = "invenio_rest:InvenioREST"
+
+[project.entry-points."invenio_base.apps"]
+invenio_rest = "invenio_rest.csrf:CSRFTokenMiddleware"
+
+[project.optional-dependencies]
+cors = []
+docs = []
+tests = [
+  "pytest-black>=0.6.0",
+  "pytest-invenio>=4.0.0,<5.0.0",
+  "sphinx>=4.5.0",
+  "xmltodict>=0.11.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "invenio_rest/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/invenio_rest",
+]
+
+[tool.isort]
+profile = "black"
+
+[tool.pydocstyle]
+add_ignore = "D401"
+
+[tool.pytest.ini_options]
+addopts = '--black --isort --pydocstyle --doctest-glob="*.rst" --doctest-modules --cov=invenio_rest --cov-report=term-missing'
+testpaths = "tests invenio_rest"
+live_server_scope = "module"
