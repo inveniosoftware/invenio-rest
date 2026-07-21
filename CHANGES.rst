@@ -7,6 +7,13 @@
 Changes
 =======
 
+Version v3.0.3 (released 2026-07-21)
+
+- chore(setup): migrate from setuptools to hatchling
+- chore(cleanup): remove outdated and unnecessary file
+- chore(format): reformat with black
+- chore(licenses): update license headers to use SPDX
+
 Version v3.0.2 (released 2026-06-01)
 
 - fix(context): wrong default value
