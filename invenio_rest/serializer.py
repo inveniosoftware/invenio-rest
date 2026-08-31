@@ -78,12 +78,6 @@ def _init_context(kwargs):
         except LookupError:
             # situation if a context_schema.get() is used but e.g. dump is not
             # called with a context parameter
-            warnings.warn(
-                "context_schema will in future only be set if and only if context is given.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-
             token = context_schema.set({})
             return lambda: context_schema.reset(token)
 
