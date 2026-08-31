@@ -1,12 +1,10 @@
 # SPDX-FileCopyrightText: 2015-2018 CERN.
-# SPDX-FileCopyrightText: 2025 Graz University of Technology.
+# SPDX-FileCopyrightText: 2025-2026 Graz University of Technology.
 # SPDX-License-Identifier: MIT
 
 """REST API module for Invenio."""
 
 from __future__ import absolute_import, print_function
-
-import warnings
 
 from . import config
 from .views import create_api_errorhandler
@@ -44,12 +42,6 @@ class InvenioREST(object):
             from .csrf import csrf
 
             csrf.init_app(app)
-        else:
-            warnings.warn(
-                "CSRF validation will be enabled by default in the version" " 1.3.x",
-                category=FutureWarning,
-                stacklevel=2,
-            )
 
         app.errorhandler(400)(
             create_api_errorhandler(status=400, message="Bad Request")
