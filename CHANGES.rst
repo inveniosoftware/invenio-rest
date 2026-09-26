@@ -8,6 +8,11 @@
 Changes
 =======
 
+Version v4.0.2 (released 2026-10-03)
+
+- chore: remove the warning about CSRF default value
+- chore: remove deprecation warning
+
 Version v4.0.1 (released 2026-07-16)
 
 - chore(setup): migrate from setuptools to hatchling
